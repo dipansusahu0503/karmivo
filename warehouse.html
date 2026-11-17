@@ -105,7 +105,7 @@
       <div class="sidebar-brand"><b id="warehouseLogo" title="Show sidebar">▦</b><span>Warehouse</span></div>
       <button class="collapse-button" id="collapseSidebar" aria-label="Minimize sidebar">‹</button>
       <nav aria-label="Warehouse modules">
-        <div class="sidebar-group"><p class="sidebar-group-title">Overview</p><a class="active" href="#dashboard">Dashboard</a><a href="#reports">Reports &amp; analytics</a></div>
+        <div class="sidebar-group"><p class="sidebar-group-title">Overview</p><a class="active" href="#dashboard">Dashboard</a><a href="#inward-status">Inward status</a><a href="#reports">Reports &amp; analytics</a></div>
         <div class="sidebar-group"><p class="sidebar-group-title">Setup &amp; masters</p><a href="#warehouse-setup">Warehouse &amp; locations</a><a href="#products">Products, SKU &amp; partners</a><a href="#users">Users, roles &amp; notifications</a></div>
         <div class="sidebar-group"><p class="sidebar-group-title">Inbound</p><a href="#purchase">Purchase orders &amp; ASN</a><a href="#inward">Inward management</a><a href="#quality">GRN &amp; quality check</a><a href="#putaway">Putaway management</a></div>
         <div class="sidebar-group"><p class="sidebar-group-title">Inventory</p><a href="#inventory">Stock management</a><a href="#transfers">Transfers &amp; adjustments</a><a href="#audit">Stock audit</a></div>
@@ -143,6 +143,7 @@
         <article class="module" id="products"><span>MASTER DATA</span><h3>Products, SKU &amp; partners</h3><p>Manage products, variants, units, vendors, distributors, retailers, and customers.</p></article>
         <article class="module" id="purchase"><span>PROCUREMENT</span><h3>Purchase orders &amp; ASN</h3><p>Create purchase orders and prepare advance shipment notices for incoming goods.</p></article>
         <article class="module" id="inward"><span>INWARD</span><h3>Inward management</h3><p>Create GRNs against approved POs or ASNs, verify received quantities and quality, assign shelf/bin locations, and make good stock available for sale.</p></article>
+        <article class="module" id="inward-status"><span>STATUS</span><h3>Inward status</h3><p>Track new purchase orders, pending inward, GRN, quality check, damaged stock, and putaway progress.</p></article>
         <article class="module" id="quality"><span>QUALITY</span><h3>GRN &amp; quality check</h3><p>Verify quantities, documents, damage, expiry, batch, and accepted or rejected stock.</p></article>
         <article class="module" id="putaway"><span>STORAGE</span><h3>Putaway management</h3><p>Allocate received stock to the right rack, zone, or bin.</p></article>
         <article class="module" id="inventory"><span>INVENTORY</span><h3>Stock management</h3><p>Track available, reserved, damaged, batch, serial, expiry, SKU, and variant stock.</p></article>
@@ -192,52 +193,217 @@
       };
       const escapeHtml = (value) => String(value || '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
       const purchaseOrders = {
-        'PO-1001': { supplier: 'ABC Distributors', date: '2026-11-17', status: 'Approved', products: [{ sku: 'SH-A23', name: 'Classic Shirt', ordered: 120 }, { sku: 'MX-673', name: 'Men T-Shirt', ordered: 80 }, { sku: 'TP-8364', name: 'Women Top', ordered: 60 }] },
-        'PO-1002': { supplier: 'Global Wholesale', date: '2026-11-16', status: 'Approved', products: [{ sku: 'SH-8574', name: 'Shirt A23', ordered: 100 }, { sku: 'WM-2201', name: 'Women Denim', ordered: 45 }] }
+        'PO-1001': { supplier: 'ABC Distributors', date: '2026-11-17', status: 'Approved', products: [{ sku: 'SH-A23', name: 'Classic Shirt', ordered: 2 }, { sku: 'MX-673', name: 'Men T-Shirt', ordered: 3 }, { sku: 'TP-8364', name: 'Women Top', ordered: 4 }] },
+        'PO-1002': { supplier: 'Global Wholesale', date: '2026-11-16', status: 'Approved', products: [{ sku: 'SH-8574', name: 'Shirt A23', ordered: 3 }, { sku: 'WM-2201', name: 'Women Denim', ordered: 2 }] }
       };
       function renderInwardWorkspace() {
         let activePO = null;
         const selected = new Set();
         const scanned = {};
+        const damaged = {};
         moduleWorkspace.innerHTML = `<div class="po-scan"><h3>Scan approved PO / ASN</h3><p>Scan the PO barcode or enter a PO number. Try PO-1001 or PO-1002 for this demo.</p><div class="scan-row"><input id="poScanner" placeholder="Scan PO barcode or enter PO number" autocomplete="off"><button id="scanPO" type="button">Scan PO</button></div></div><div id="poDetails"></div>`;
         const poDetails = document.querySelector('#poDetails');
         const renderPO = () => {
           if (!activePO) return;
-          poDetails.innerHTML = `<div class="po-details"><h3>Purchase order details</h3><div class="po-meta"><span>PO number<strong>${escapeHtml(activePO.number)}</strong></span><span>Supplier<strong>${escapeHtml(activePO.supplier)}</strong></span><span>PO date<strong>${escapeHtml(activePO.date)}</strong></span><span>Status<strong>${escapeHtml(activePO.status)}</strong></span></div><table class="po-products"><thead><tr><th>Select</th><th>SKU</th><th>Product name</th><th>Ordered qty</th><th>Scanned qty</th><th>Status</th></tr></thead><tbody>${activePO.products.map((product) => `<tr><td><input class="po-product-select" type="checkbox" data-sku="${product.sku}" ${selected.has(product.sku) ? 'checked' : ''}></td><td>${product.sku}</td><td>${product.name}</td><td>${product.ordered}</td><td>${scanned[product.sku] || 0}</td><td>${(scanned[product.sku] || 0) >= product.ordered ? 'Complete' : 'Pending scan'}</td></tr>`).join('')}</tbody></table><div class="scan-status ${Object.keys(scanned).length ? 'success' : ''}" id="scanStatus">${Object.keys(scanned).length ? 'SKU scan recorded. Select all required products and continue scanning.' : 'Select the products you are receiving, then scan each SKU barcode.'}</div><div class="scan-row"><input id="skuScanner" placeholder="Scan selected SKU barcode" autocomplete="off"><button id="scanSKU" type="button">Scan SKU</button></div><button class="grn-submit" id="createScannedGRN" type="button">Create GRN from scanned products</button></div>`;
+          poDetails.innerHTML = `<div class="po-details"><h3>Purchase order details</h3><div class="po-meta"><span>PO number<strong>${escapeHtml(activePO.number)}</strong></span><span>Supplier<strong>${escapeHtml(activePO.supplier)}</strong></span><span>PO date<strong>${escapeHtml(activePO.date)}</strong></span><span>Status<strong>${escapeHtml(activePO.status)}</strong></span></div><table class="po-products"><thead><tr><th>Select</th><th>SKU</th><th>Product name</th><th>Ordered qty</th><th>Scanned qty</th><th>Status</th></tr></thead><tbody>${activePO.products.map((product) => `<tr><td><input class="po-product-select" type="checkbox" data-sku="${product.sku}" ${selected.has(product.sku) ? 'checked' : ''}></td><td>${product.sku}</td><td>${product.name}</td><td>${product.ordered}</td><td>${scanned[product.sku] || 0}</td><td>${(scanned[product.sku] || 0) >= product.ordered ? 'Complete' : 'Pending scan'}</td></tr>`).join('')}</tbody></table><div class="scan-status ${Object.keys(scanned).length ? 'success' : ''}" id="scanStatus">${Object.keys(scanned).length ? 'SKU entry recorded. Continue until the received quantity is complete.' : 'Select the products you are receiving, then scan or add each SKU manually.'}</div><div class="scan-row"><input id="skuScanner" placeholder="Scan or type selected SKU" autocomplete="off"><button id="scanSKU" type="button">Scan SKU</button><button id="addManualSKU" type="button">Add manually</button></div><button class="grn-submit" id="createScannedGRN" type="button">Create GRN from scanned products</button></div>`;
+          const damagedHeader = document.createElement('th');
+          damagedHeader.textContent = 'Damaged qty';
+          poDetails.querySelector('.po-products thead tr').insertBefore(damagedHeader, poDetails.querySelector('.po-products thead tr').lastElementChild);
+          if (!activePO.grnNumber) {
+            const actionHeader = document.createElement('th');
+            actionHeader.textContent = 'Action';
+            poDetails.querySelector('.po-products thead tr').appendChild(actionHeader);
+          }
+          poDetails.querySelectorAll('.po-products tbody tr').forEach((row, index) => {
+            const product = activePO.products[index];
+            const damagedCell = document.createElement('td');
+            damagedCell.textContent = damaged[product.sku] || 0;
+            row.insertBefore(damagedCell, row.lastElementChild);
+            row.lastElementChild.textContent = (scanned[product.sku] || 0) + (damaged[product.sku] || 0) >= product.ordered ? 'Complete' : 'Pending scan';
+            if (!activePO.grnNumber) {
+              const actionCell = document.createElement('td');
+              actionCell.innerHTML = `<button class="delete-record edit-sku" type="button" data-sku="${product.sku}">Edit</button>`;
+              row.appendChild(actionCell);
+            }
+          });
           poDetails.querySelectorAll('.po-product-select').forEach((checkbox) => checkbox.addEventListener('change', () => checkbox.checked ? selected.add(checkbox.dataset.sku) : selected.delete(checkbox.dataset.sku)));
-          document.querySelector('#scanSKU').addEventListener('click', () => {
+          poDetails.querySelectorAll('.edit-sku').forEach((button) => button.addEventListener('click', () => {
+            scanned[button.dataset.sku] = 0;
+            damaged[button.dataset.sku] = 0;
+            selected.add(button.dataset.sku);
+            renderPO();
+            document.querySelector('#skuScanner').focus();
+          }));
+          const recordSKU = () => {
             const sku = document.querySelector('#skuScanner').value.trim().toUpperCase();
             const product = activePO.products.find((item) => item.sku === sku);
             if (!product) return alert('This SKU is not present in the scanned PO.');
             if (!selected.has(sku)) return alert('Select this product first, then scan its SKU.');
-            if ((scanned[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU.');
+            if ((scanned[sku] || 0) + (damaged[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU. Use Edit to correct the accepted or damaged quantity.');
             scanned[sku] = (scanned[sku] || 0) + 1;
+            renderPO();
+            document.querySelector('#skuScanner').focus();
+          };
+          document.querySelector('#scanSKU').addEventListener('click', recordSKU);
+          document.querySelector('#addManualSKU').addEventListener('click', recordSKU);
+          const damageButton = document.createElement('button');
+          damageButton.id = 'markDamaged';
+          damageButton.type = 'button';
+          damageButton.textContent = 'Mark damaged / rejected';
+          damageButton.className = 'delete-record';
+          document.querySelector('#addManualSKU').after(damageButton);
+          damageButton.addEventListener('click', () => {
+            const sku = document.querySelector('#skuScanner').value.trim().toUpperCase();
+            const product = activePO.products.find((item) => item.sku === sku);
+            if (!product) return alert('This SKU is not present in the scanned PO.');
+            if (!selected.has(sku)) return alert('Select this product first, then mark it damaged.');
+            if ((scanned[sku] || 0) + (damaged[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU.');
+            damaged[sku] = (damaged[sku] || 0) + 1;
             renderPO();
             document.querySelector('#skuScanner').focus();
           });
           document.querySelector('#createScannedGRN').addEventListener('click', () => {
-            const received = activePO.products.filter((product) => selected.has(product.sku) && scanned[product.sku]);
+            const received = activePO.products.filter((product) => selected.has(product.sku) && (scanned[product.sku] || damaged[product.sku]));
             if (!received.length) return alert('Select at least one product and scan its SKU before creating the GRN.');
             const records = JSON.parse(localStorage.getItem('warehouse-inward') || '[]');
-            records.unshift({ po: activePO.number, supplier: activePO.supplier, products: received.map((product) => `${product.sku} (${scanned[product.sku]}/${product.ordered})`).join(', '), quantity: received.reduce((total, product) => total + scanned[product.sku], 0), qcStatus: 'Pending', createdAt: new Date().toISOString() });
+            records.unshift({ grnNumber: `GRN-${String(Date.now()).slice(-6)}`, po: activePO.number, supplier: activePO.supplier, productLines: received.map((product) => ({ sku: product.sku, name: product.name, acceptedQuantity: scanned[product.sku] || 0, damagedQuantity: damaged[product.sku] || 0, quantity: (scanned[product.sku] || 0) + (damaged[product.sku] || 0) })), products: received.map((product) => `${product.sku} (${scanned[product.sku] || 0} accepted / ${damaged[product.sku] || 0} damaged)`).join(', '), quantity: received.reduce((total, product) => total + (scanned[product.sku] || 0) + (damaged[product.sku] || 0), 0), qcStatus: 'Pending', status: 'Awaiting QC', createdAt: new Date().toISOString() });
             localStorage.setItem('warehouse-inward', JSON.stringify(records));
-            alert('GRN created successfully from the scanned PO products.');
+            activePO.grnNumber = records[0].grnNumber;
+            activePO.status = 'GRN Completed';
+            alert(`GRN ${records[0].grnNumber} created. Assign a location in Stock Management before stock becomes available.`);
             renderPO();
           });
+          if (activePO.grnNumber) {
+            poDetails.querySelectorAll('.po-meta strong')[3].textContent = 'GRN Completed';
+            poDetails.querySelector('#scanStatus').textContent = `GRN ${activePO.grnNumber} completed. Assign locations in Stock Management to add stock.`;
+            poDetails.querySelector('#scanStatus').classList.add('success');
+            poDetails.querySelector('#skuScanner').parentElement.remove();
+            poDetails.querySelector('#createScannedGRN').replaceWith(Object.assign(document.createElement('strong'), { textContent: '✓ GRN Completed', className: 'scan-status success' }));
+          }
         };
         document.querySelector('#scanPO').addEventListener('click', () => {
           const number = document.querySelector('#poScanner').value.trim().toUpperCase();
           const po = purchaseOrders[number];
           if (!po) return alert('PO not found or not approved for GRN. Try PO-1001.');
-          activePO = { ...po, number };
+          const existingGRN = JSON.parse(localStorage.getItem('warehouse-inward') || '[]').find((record) => record.po === number);
+          activePO = { ...po, number, grnNumber: existingGRN?.grnNumber, status: existingGRN ? 'GRN Completed' : po.status };
+          if (existingGRN?.productLines) existingGRN.productLines.forEach((line) => { scanned[line.sku] = line.acceptedQuantity ?? line.quantity; damaged[line.sku] = line.damagedQuantity || 0; selected.add(line.sku); });
           renderPO();
         });
         document.querySelector('#poScanner').addEventListener('keydown', (event) => { if (event.key === 'Enter') document.querySelector('#scanPO').click(); });
       }
+      function renderLocationWorkspace() {
+        const locations = JSON.parse(localStorage.getItem('warehouse-locations') || '[]');
+        moduleWorkspace.innerHTML = `<form class="workspace-form" id="locationForm"><label>Warehouse<input name="warehouse" placeholder="Main warehouse" required></label><label>Rack<input name="rack" placeholder="A1" required></label><label>Row<input name="row" placeholder="A1-01" required></label><label>Pallet / box<input name="palletBox" placeholder="A1-01-32" required></label><label>Location name<input name="name" placeholder="Pallet 32" required></label><label>Capacity<input name="capacity" type="number" required></label><label>Status<select name="status"><option>Active</option><option>Blocked</option></select></label><button type="submit">Create location profile</button></form><div class="records"><h3>Location profiles</h3>${locations.length ? `<table><thead><tr><th>Location code</th><th>Warehouse</th><th>Rack</th><th>Row</th><th>Pallet / box</th><th>Capacity</th><th>Status</th><th>Action</th></tr></thead><tbody>${locations.map((location, index) => `<tr><td><strong>${escapeHtml(location.code)}</strong></td><td>${escapeHtml(location.warehouse)}</td><td>${escapeHtml(location.rack)}</td><td>${escapeHtml(location.row)}</td><td>${escapeHtml(location.palletBox)}</td><td>${escapeHtml(location.capacity)}</td><td>${escapeHtml(location.status)}</td><td><button class="delete-record" data-index="${index}">Delete</button></td></tr>`).join('')}</tbody></table>` : '<p class="empty-records">No locations created. Create Rack → Row → Pallet/Box profiles before adding GRN stock.</p>'}</div>`;
+        document.querySelector('#locationForm').addEventListener('submit', (event) => {
+          event.preventDefault();
+          const values = Object.fromEntries(new FormData(event.currentTarget));
+          values.code = `${values.rack}-${values.row}-${values.palletBox}`;
+          const nextLocations = JSON.parse(localStorage.getItem('warehouse-locations') || '[]');
+          if (nextLocations.some((location) => location.code === values.code)) return alert('This location profile already exists.');
+          nextLocations.unshift(values);
+          localStorage.setItem('warehouse-locations', JSON.stringify(nextLocations));
+          renderLocationWorkspace();
+        });
+        moduleWorkspace.querySelectorAll('.delete-record').forEach((button) => button.addEventListener('click', () => {
+          const nextLocations = JSON.parse(localStorage.getItem('warehouse-locations') || '[]');
+          nextLocations.splice(Number(button.dataset.index), 1);
+          localStorage.setItem('warehouse-locations', JSON.stringify(nextLocations));
+          renderLocationWorkspace();
+        }));
+      }
+      function renderQualityWorkspace() {
+        const grns = JSON.parse(localStorage.getItem('warehouse-inward') || '[]');
+        moduleWorkspace.innerHTML = `<div class="po-scan"><h3>Load GRN for quality check</h3><p>Enter a GRN number to view accepted and damaged quantities.</p><div class="scan-row"><input id="qualityGRN" placeholder="Enter GRN number"><button id="loadQualityGRN" type="button">Load GRN</button></div></div><div id="qualityDetails"></div>`;
+        document.querySelector('#loadQualityGRN').addEventListener('click', () => {
+          const number = document.querySelector('#qualityGRN').value.trim().toUpperCase();
+          const grn = grns.find((record) => record.grnNumber === number);
+          if (!grn) return alert('GRN not found. Create the GRN from Inward first.');
+          const lines = grn.productLines || [];
+          document.querySelector('#qualityDetails').innerHTML = `<div class="po-details"><h3>GRN ${escapeHtml(grn.grnNumber)} · ${escapeHtml(grn.supplier)}</h3><div class="po-meta"><span>PO<strong>${escapeHtml(grn.po)}</strong></span><span>Accepted total<strong>${lines.reduce((total, line) => total + (line.acceptedQuantity || line.quantity || 0), 0)}</strong></span><span>Damaged total<strong>${lines.reduce((total, line) => total + (line.damagedQuantity || 0), 0)}</strong></span><span>Status<strong>${escapeHtml(grn.status)}</strong></span></div><table class="po-products"><thead><tr><th>Show accepted</th><th>Show damaged</th><th>SKU</th><th>Product</th><th>Accepted qty</th><th>Damaged qty</th></tr></thead><tbody>${lines.map((line, index) => `<tr><td><input class="quality-toggle" type="checkbox" data-kind="accepted" data-index="${index}"></td><td><input class="quality-toggle" type="checkbox" data-kind="damaged" data-index="${index}"></td><td>${escapeHtml(line.sku)}</td><td>${escapeHtml(line.name)}</td><td>${line.acceptedQuantity ?? line.quantity ?? 0}</td><td>${line.damagedQuantity || 0}</td></tr>`).join('')}</tbody></table><div class="scan-status" id="qualitySelection">Tick accepted or damaged to show its details.</div><button class="grn-submit" id="saveQuality" type="button">Save quality check</button></div>`;
+          const refreshSelection = () => {
+            const selections = [...document.querySelectorAll('.quality-toggle:checked')].map((checkbox) => `${lines[Number(checkbox.dataset.index)].sku} · ${checkbox.dataset.kind} quantity: ${checkbox.dataset.kind === 'accepted' ? (lines[Number(checkbox.dataset.index)].acceptedQuantity ?? lines[Number(checkbox.dataset.index)].quantity ?? 0) : (lines[Number(checkbox.dataset.index)].damagedQuantity || 0)}`);
+            document.querySelector('#qualitySelection').textContent = selections.length ? selections.join(' | ') : 'Tick accepted or damaged to show its details.';
+          };
+          document.querySelectorAll('.quality-toggle').forEach((checkbox) => checkbox.addEventListener('change', refreshSelection));
+          document.querySelector('#saveQuality').addEventListener('click', () => {
+            const qualityRecords = JSON.parse(localStorage.getItem('warehouse-quality') || '[]');
+            qualityRecords.unshift({ grnNumber: grn.grnNumber, acceptedQuantity: lines.reduce((total, line) => total + (line.acceptedQuantity || line.quantity || 0), 0), damagedQuantity: lines.reduce((total, line) => total + (line.damagedQuantity || 0), 0), checkedAt: new Date().toISOString() });
+            localStorage.setItem('warehouse-quality', JSON.stringify(qualityRecords));
+            const updatedGRNs = JSON.parse(localStorage.getItem('warehouse-inward') || '[]').map((record) => record.grnNumber === grn.grnNumber ? { ...record, qcStatus: 'Completed', status: record.status === 'Stock added' ? record.status : 'Awaiting putaway' } : record);
+            localStorage.setItem('warehouse-inward', JSON.stringify(updatedGRNs));
+            alert(`Quality check saved for ${grn.grnNumber}.`);
+          });
+        });
+      }
+      function renderInwardStatusWorkspace() {
+        const grns = JSON.parse(localStorage.getItem('warehouse-inward') || '[]');
+        const rows = Object.entries(purchaseOrders).map(([number, po]) => {
+          const record = grns.find((item) => item.po === number);
+          return { number, supplier: po.supplier, qty: record?.quantity || po.products.reduce((total, product) => total + product.ordered, 0), status: record?.status || 'Inward pending', grn: record?.grnNumber || '—' };
+        });
+        moduleWorkspace.innerHTML = `<div class="records"><h3>PO and GRN status</h3><p class="empty-records">Track new PO data, pending inward, completed GRN, QC, damaged stock, and putaway from one screen.</p><table><thead><tr><th>PO number</th><th>Supplier</th><th>Quantity</th><th>GRN number</th><th>Status</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${row.number}</td><td>${escapeHtml(row.supplier)}</td><td>${row.qty}</td><td>${row.grn}</td><td><strong>${escapeHtml(row.status)}</strong></td></tr>`).join('')}</tbody></table></div>`;
+      }
+      function renderStockWorkspace() {
+        const locations = JSON.parse(localStorage.getItem('warehouse-locations') || '[]');
+        const grns = JSON.parse(localStorage.getItem('warehouse-inward') || '[]');
+        moduleWorkspace.innerHTML = `<div class="po-scan"><h3>Load inward by GRN number</h3><p>Accepted stock needs a normal location; damaged stock must be assigned to a damaged bin.</p><div class="scan-row"><input id="grnScanner" placeholder="Enter GRN number, e.g. GRN-123456"><button id="loadGRN" type="button">Load GRN</button></div></div><div id="grnDetails"></div>`;
+        document.querySelector('#loadGRN').addEventListener('click', () => {
+          const grnNumber = document.querySelector('#grnScanner').value.trim().toUpperCase();
+          const grn = grns.find((record) => record.grnNumber === grnNumber);
+          if (!grn) return alert('GRN not found. Create the GRN from Inward first.');
+          const lines = grn.productLines || [];
+          const locationOptions = locations.filter((location) => location.status === 'Active').map((location) => `<option value="${escapeHtml(location.code)}">${escapeHtml(location.code)} · ${escapeHtml(location.name)}</option>`).join('');
+          document.querySelector('#grnDetails').innerHTML = `<div class="po-details"><h3>GRN ${escapeHtml(grn.grnNumber)} · ${escapeHtml(grn.supplier)}</h3><table class="po-products"><thead><tr><th>SKU</th><th>Product</th><th>Accepted qty</th><th>Accepted location</th><th>Damaged qty</th><th>Damaged bin</th></tr></thead><tbody>${lines.map((line, index) => `<tr><td>${escapeHtml(line.sku)}</td><td>${escapeHtml(line.name)}</td><td>${line.acceptedQuantity ?? line.quantity ?? 0}</td><td><select class="accepted-location" data-index="${index}"><option value="">Select location</option>${locationOptions}</select></td><td>${line.damagedQuantity || 0}</td><td><select class="damaged-location" data-index="${index}"><option value="">Select damaged bin</option>${locationOptions}</select></td></tr>`).join('')}</tbody></table><button class="grn-submit" id="addGRNToStock" type="button">Add located stock</button></div>`;
+          document.querySelector('#addGRNToStock').addEventListener('click', () => {
+            const acceptedSelects = [...document.querySelectorAll('.accepted-location')];
+            const damagedSelects = [...document.querySelectorAll('.damaged-location')];
+            if (lines.some((line, index) => (line.acceptedQuantity ?? line.quantity ?? 0) > 0 && !acceptedSelects[index].value)) return alert('Select a location for every accepted product.');
+            if (lines.some((line, index) => (line.damagedQuantity || 0) > 0 && (!damagedSelects[index].value || !damagedSelects[index].selectedOptions[0].textContent.toLowerCase().includes('damaged')))) return alert('Damaged quantity must be assigned to a damaged bin location.');
+            const stock = JSON.parse(localStorage.getItem('warehouse-stock') || '[]');
+            lines.forEach((line, index) => {
+              const acceptedQuantity = line.acceptedQuantity ?? line.quantity ?? 0;
+              const damagedQuantity = line.damagedQuantity || 0;
+              if (acceptedQuantity) stock.unshift({ grnNumber, sku: line.sku, product: line.name, quantity: acceptedQuantity, stockType: 'Accepted', location: acceptedSelects[index].value, addedAt: new Date().toISOString() });
+              if (damagedQuantity) stock.unshift({ grnNumber, sku: line.sku, product: line.name, quantity: damagedQuantity, stockType: 'Damaged', location: damagedSelects[index].value, addedAt: new Date().toISOString() });
+            });
+            localStorage.setItem('warehouse-stock', JSON.stringify(stock));
+            const updatedGRNs = JSON.parse(localStorage.getItem('warehouse-inward') || '[]').map((record) => record.grnNumber === grnNumber ? { ...record, status: 'Stock added' } : record);
+            localStorage.setItem('warehouse-inward', JSON.stringify(updatedGRNs));
+            alert(`GRN ${grnNumber} stock added with accepted and damaged locations.`);
+          });
+        });
+      }
+      function renderInventoryWorkspace() {
+        const locations = JSON.parse(localStorage.getItem('warehouse-locations') || '[]');
+        const grns = JSON.parse(localStorage.getItem('warehouse-inward') || '[]');
+        moduleWorkspace.innerHTML = `<div class="po-scan"><h3>Load inward by GRN number</h3><p>Stock will be added only after every inward item has a valid rack, row, pallet, or box location.</p><div class="scan-row"><input id="grnScanner" placeholder="Enter GRN number, e.g. GRN-123456"><button id="loadGRN" type="button">Load GRN</button></div></div><div id="grnDetails"></div>`;
+        document.querySelector('#loadGRN').addEventListener('click', () => {
+          const grnNumber = document.querySelector('#grnScanner').value.trim().toUpperCase();
+          const grn = grns.find((record) => record.grnNumber === grnNumber);
+          if (!grn) return alert('GRN not found. Create the GRN from Inward first.');
+          const lines = grn.productLines || [];
+          document.querySelector('#grnDetails').innerHTML = `<div class="po-details"><h3>GRN ${escapeHtml(grn.grnNumber)}</h3><div class="po-meta"><span>Supplier<strong>${escapeHtml(grn.supplier)}</strong></span><span>PO<strong>${escapeHtml(grn.po)}</strong></span><span>Status<strong>${escapeHtml(grn.status || 'Awaiting putaway')}</strong></span></div><table class="po-products"><thead><tr><th>SKU</th><th>Product</th><th>Quantity</th><th>Location profile</th></tr></thead><tbody>${lines.map((line, index) => `<tr><td>${escapeHtml(line.sku)}</td><td>${escapeHtml(line.name)}</td><td>${escapeHtml(line.quantity)}</td><td><select class="stock-location" data-index="${index}" required><option value="">Select location</option>${locations.filter((location) => location.status === 'Active').map((location) => `<option value="${escapeHtml(location.code)}">${escapeHtml(location.code)} · ${escapeHtml(location.name)}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table><button class="grn-submit" id="addGRNToStock" type="button">Add located stock</button></div>`;
+          document.querySelector('#addGRNToStock').addEventListener('click', () => {
+            const selectedLocations = [...document.querySelectorAll('.stock-location')];
+            if (selectedLocations.some((select) => !select.value)) return alert('Select a location for every GRN product before adding stock.');
+            const stock = JSON.parse(localStorage.getItem('warehouse-stock') || '[]');
+            lines.forEach((line, index) => stock.unshift({ grnNumber, sku: line.sku, product: line.name, quantity: line.quantity, location: selectedLocations[index].value, addedAt: new Date().toISOString() }));
+            localStorage.setItem('warehouse-stock', JSON.stringify(stock));
+            const updatedGRNs = JSON.parse(localStorage.getItem('warehouse-inward') || '[]').map((record) => record.grnNumber === grnNumber ? { ...record, status: 'Stock added' } : record);
+            localStorage.setItem('warehouse-inward', JSON.stringify(updatedGRNs));
+            alert(`GRN ${grnNumber} stock added with locations.`);
+          });
+        });
+      }
       function renderWorkspace(id) {
+        if (id === 'inward-status') return renderInwardStatusWorkspace();
+        if (id === 'quality') return renderQualityWorkspace();
+        if (id === 'inventory') return renderStockWorkspace();
         const config = moduleCatalog[id];
         if (!config) return;
         if (id === 'inward') return renderInwardWorkspace();
+        if (id === 'warehouse-setup') return renderLocationWorkspace();
         const [label, title, description, action, fields] = config;
         const storageKey = `warehouse-${id}`;
         const records = JSON.parse(localStorage.getItem(storageKey) || '[]');
