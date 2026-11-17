@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ServiceDesk | Multi-service platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section class="auth-screen" id="authScreen">
+      <div class="auth-decoration auth-decoration-one"></div><div class="auth-decoration auth-decoration-two"></div>
+      <div class="auth-card">
+        <a class="brand auth-brand" href="#"><span class="brand-mark">S</span><span>servicedesk</span></a>
+        <div class="auth-copy"><span class="eyebrow">YOUR WORKSPACE</span><h1 id="authTitle">Welcome back</h1><p id="authSubtitle">Sign in to access all your services in one place.</p></div>
+        <form id="authForm">
+          <label class="register-only" hidden for="name">Your name<input id="name" name="name" type="text" autocomplete="name" placeholder="Dipansu Sahu" /></label>
+          <label class="register-only" hidden for="username">Username<input id="username" name="username" type="text" autocomplete="username" required placeholder="dipansu.sahu" /></label>
+          <label><span id="identifierLabel">Email address</span><input id="identifier" name="identifier" type="text" autocomplete="username" required placeholder="you@company.com" /></label>
+          <input id="email" name="email" type="hidden" />
+          <label><span id="passwordLabel">Password</span><input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password" minlength="8" /></label>
+          <label class="register-only" hidden for="confirmPassword">Re-enter password<input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter your password" minlength="8" /></label>
+          <p class="auth-error" id="authError" role="alert"></p><button class="auth-submit" id="authSubmit" type="submit">Sign in <span>→</span></button>
+        </form>
+        <p class="auth-switch"><span id="switchPrompt">New to servicedesk?</span> <button type="button" id="switchMode">Create an account</button></p>
+        <p class="entra-note" id="entraNote">Use your personal email to create your workspace account.</p>
+      </div>
+    </section>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#">
+          <span class="brand-mark">S</span>
+          <span>servicedesk</span>
+        </a>
+        <nav class="main-nav" aria-label="Main navigation">
+          <a class="nav-item active" href="#services"><span class="nav-icon">⌘</span>Services</a>
+          <a class="nav-item" href="#activity"><span class="nav-icon">↗</span>Activity</a>
+          <a class="nav-item" href="#settings"><span class="nav-icon">⚙</span>Settings</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="help-card"><span class="help-icon">?</span><strong>Need a hand?</strong><p>Check the platform guide</p><a href="#">Open guide <span>→</span></a></div>
+          <div class="profile"><span class="avatar">DS</span><span><strong>Dipansu Sahu</strong><small>Workspace admin</small></span><span class="more">•••</span></div>
+        </div>
+      </aside>
+
+      <main class="main-content" id="services">
+        <header class="topbar"><button class="mobile-menu" aria-label="Open menu">☰</button><div class="breadcrumbs"><span>Workspace</span><span>/</span><strong>Services</strong></div><div class="top-actions"><button class="icon-button" aria-label="Notifications">♧<i></i></button><span class="top-avatar">DS</span><button class="logout-button" id="logoutButton">Log out</button></div></header>
+        <section class="hero">
+          <div><span class="eyebrow">YOUR WORKSPACE</span><h1>Good morning, Dipansu <span>✦</span></h1><p>Choose a service to get started. Each service is built for the best experience on its supported device.</p></div>
+          <div class="date-pill"><span class="calendar">▣</span><span>Tuesday, Nov 17, 2026</span></div>
+        </section>
+
+        <section class="content-section">
+          <div class="section-heading"><div><h2>Available services</h2><p>Explore your workspace tools</p></div><div class="device-status"><span class="status-dot"></span><span id="deviceLabel">Detecting device...</span></div></div>
+          <div class="service-grid">
+            <article class="service-card featured" data-platform="mobile" data-name="Pocket tasks">
+              <div class="card-top"><span class="service-icon purple">⌁</span><span class="platform-badge mobile-badge">◉ Mobile app</span></div><div class="card-body"><h3>Pocket tasks</h3><p>Keep your daily work moving, wherever you are.</p></div><div class="card-footer"><span class="available">● Available on mobile</span><button class="launch-button">Open service <span>↗</span></button></div>
+            </article>
+            <article class="service-card" data-platform="desktop" data-name="Team analytics">
+              <div class="card-top"><span class="service-icon blue">▥</span><span class="platform-badge desktop-badge">▣ Desktop only</span></div><div class="card-body"><h3>Team analytics</h3><p>See the numbers behind your team's progress.</p></div><div class="card-footer"><span class="available">● Ready to use</span><button class="launch-button">Open service <span>↗</span></button></div>
+            </article>
+            <article class="service-card" data-platform="desktop" data-name="Project hub">
+              <div class="card-top"><span class="service-icon orange">◇</span><span class="platform-badge desktop-badge">▣ Desktop only</span></div><div class="card-body"><h3>Project hub</h3><p>Plan, track, and ship your team's biggest ideas.</p></div><div class="card-footer"><span class="available">● Ready to use</span><button class="launch-button">Open service <span>↗</span></button></div>
+            </article>
+            <article class="service-card" data-platform="desktop" data-name="Resource center">
+              <div class="card-top"><span class="service-icon green">⌂</span><span class="platform-badge desktop-badge">▣ Desktop only</span></div><div class="card-body"><h3>Resource center</h3><p>Find guides, templates, and everything you need.</p></div><div class="card-footer"><span class="available">● Ready to use</span><button class="launch-button">Open service <span>↗</span></button></div>
+            </article>
+          </div>
+        </section>
+        <section class="tip-banner"><span class="tip-icon">✦</span><div><strong>Built for the right screen</strong><p>Some services need a bigger canvas. We’ll always let you know when to switch devices.</p></div><button aria-label="Dismiss tip">×</button></section>
+        <footer>© 2026 servicedesk <span>•</span> Your workspace, your way.</footer>
+      </main>
+    </div>
+    <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden><div class="modal"><button class="modal-close" id="closeModal" aria-label="Close">×</button><span class="modal-icon">▣</span><span class="modal-label">DESKTOP SERVICE</span><h2 id="modalTitle">This service needs a bigger screen</h2><p><strong id="serviceName">Team analytics</strong> is only available on desktop or laptop. Please switch devices to continue.</p><button class="modal-action" id="modalAction">Got it</button></div></div>
+    <script src="script.js"></script>
+  </body>
+</html>

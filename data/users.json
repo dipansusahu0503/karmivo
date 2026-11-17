@@ -1,0 +1,25 @@
+[
+  {
+    "id": "13575415-b894-4ff0-a48e-0955114d6499",
+    "email": "demo.user@example.com",
+    "name": "Demo User",
+    "passwordHash": "4102cec813f00daa18d1cc2cdc687527:7a58d1037eea98727890fd942c246c4786e8ea69bcd688711a787052dd4aab6701f2227fba75f2c447afe9cd5b8ba8ff2453aca4319b8721a4bad26808574552",
+    "createdAt": "2026-11-17T06:08:48.146Z"
+  },
+  {
+    "id": "6a8d1118-2123-4218-92e9-d7fd01fa5930",
+    "username": "personal.user",
+    "email": "personal.user@example.com",
+    "name": "Personal User",
+    "passwordHash": "60a8f783db803873c7011f64eed24d63:1178470792a4af1cc727d1245aa7d4866ef0c74b5376a059d2981c4d083252056e120943a9838aeaf3e534720d952bf7621f36ac56153f363c9185989bf0a86e",
+    "createdAt": "2026-11-17T06:45:22.554Z"
+  },
+  {
+    "id": "9638fb70-c785-4b36-88ae-33b77cd88d50",
+    "username": "mismatch.test",
+    "email": "mismatch@example.com",
+    "name": "Mismatch Test",
+    "passwordHash": "854a9206d78ea7e00e8c3ea1e087ce76:3f47d08eff2f0aaf1c2b3d92e0f98ac9f793a9ca157164e741c12e0e06cacfc31d04eaeb8b1b41190c64513e0ed1817bf1a042b0aec2387c84875143fc924c47",
+    "createdAt": "2026-11-17T07:01:09.500Z"
+  }
+]
