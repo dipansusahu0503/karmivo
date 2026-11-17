@@ -46,18 +46,15 @@
       </aside>
 
       <main class="main-content" id="services">
-        <header class="topbar"><button class="mobile-menu" aria-label="Open menu">☰</button><div class="breadcrumbs"><span>Workspace</span><span>/</span><strong>Services</strong></div><div class="top-actions"><button class="icon-button" aria-label="Notifications">♧<i></i></button><span class="top-avatar">DS</span><button class="logout-button" id="logoutButton">Log out</button></div></header>
+        <header class="topbar"><div class="breadcrumbs"><span>Workspace</span><span>/</span><strong>Services</strong></div><div class="top-actions"><button class="icon-button" aria-label="Notifications">♧<i></i></button><span class="top-avatar">DS</span><button class="logout-button" id="logoutButton">Log out</button></div></header>
         <section class="hero">
-          <div><span class="eyebrow">YOUR WORKSPACE</span><h1>Good morning, Dipansu <span>✦</span></h1><p>Choose a service to get started. Each service is built for the best experience on its supported device.</p></div>
+          <div><span class="eyebrow">YOUR WORKSPACE</span><h1>Good morning, Dipansu <span>✦</span></h1><p>Choose a web service to get started. Your workspace is optimized for desktop and laptop browsers.</p></div>
           <div class="date-pill"><span class="calendar">▣</span><span>Tuesday, Nov 17, 2026</span></div>
         </section>
 
         <section class="content-section">
           <div class="section-heading"><div><h2>Available services</h2><p>Explore your workspace tools</p></div><div class="device-status"><span class="status-dot"></span><span id="deviceLabel">Detecting device...</span></div></div>
           <div class="service-grid">
-            <article class="service-card featured" data-platform="mobile" data-name="Pocket tasks">
-              <div class="card-top"><span class="service-icon purple">⌁</span><span class="platform-badge mobile-badge">◉ Mobile app</span></div><div class="card-body"><h3>Pocket tasks</h3><p>Keep your daily work moving, wherever you are.</p></div><div class="card-footer"><span class="available">● Available on mobile</span><button class="launch-button">Open service <span>↗</span></button></div>
-            </article>
             <article class="service-card" data-platform="desktop" data-name="Team analytics">
               <div class="card-top"><span class="service-icon blue">▥</span><span class="platform-badge desktop-badge">▣ Desktop only</span></div><div class="card-body"><h3>Team analytics</h3><p>See the numbers behind your team's progress.</p></div><div class="card-footer"><span class="available">● Ready to use</span><button class="launch-button">Open service <span>↗</span></button></div>
             </article>
@@ -69,11 +66,11 @@
             </article>
           </div>
         </section>
-        <section class="tip-banner"><span class="tip-icon">✦</span><div><strong>Built for the right screen</strong><p>Some services need a bigger canvas. We’ll always let you know when to switch devices.</p></div><button aria-label="Dismiss tip">×</button></section>
+        <section class="tip-banner"><span class="tip-icon">✦</span><div><strong>Desktop web workspace</strong><p>All services are available through your desktop or laptop browser.</p></div><button aria-label="Dismiss tip">×</button></section>
         <footer>© 2026 servicedesk <span>•</span> Your workspace, your way.</footer>
       </main>
     </div>
     <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden><div class="modal"><button class="modal-close" id="closeModal" aria-label="Close">×</button><span class="modal-icon">▣</span><span class="modal-label">DESKTOP SERVICE</span><h2 id="modalTitle">This service needs a bigger screen</h2><p><strong id="serviceName">Team analytics</strong> is only available on desktop or laptop. Please switch devices to continue.</p><button class="modal-action" id="modalAction">Got it</button></div></div>
-    <script src="script.js"></script>
+    <script src="script.js?v=3"></script>
   </body>
 </html>

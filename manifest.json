@@ -1,0 +1,13 @@
+{
+  "name": "ServiceDesk Workspace",
+  "short_name": "ServiceDesk",
+  "description": "One workspace for all your services.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8f7ff",
+  "theme_color": "#5b45e5",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

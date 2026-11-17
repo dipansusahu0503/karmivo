@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warehouse Management | servicedesk</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; color: #252332; background: #fbfbfc; font: 14px Arial, sans-serif; }
+      header { height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 4%; margin-left: 250px; background: #fff; border-bottom: 1px solid #e9e8ee; transition: margin-left .2s ease; }
+      .sidebar { position: fixed; z-index: 2; inset: 0 auto 0 0; width: 250px; overflow-y: auto; padding: 24px 14px; background: #11110f; color: #fff; transition: width .2s ease; }
+      .sidebar-brand { display: flex; align-items: center; gap: 9px; margin: 0 10px 25px; color: #fff; font-size: 17px; font-weight: 700; white-space: nowrap; }
+      .sidebar-brand b { display: inline-grid; place-items: center; width: 27px; height: 27px; background: #5b45e5; border-radius: 8px; }
+      .collapse-button { position: absolute; top: 18px; right: 12px; width: 28px; height: 28px; border: 0; color: #aaa; background: transparent; font-size: 23px; cursor: pointer; }
+      .sidebar-group { margin-top: 19px; }
+      .sidebar-group-title { margin: 0 10px 8px; color: #888; font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+      .sidebar a { display: block; padding: 8px 10px; border-left: 2px solid transparent; color: #c7c7c4; font-size: 12px; text-decoration: none; white-space: nowrap; }
+      .sidebar a:hover, .sidebar a.active { color: #fff; background: #252521; border-left-color: #715cf0; }
+      .sidebar-collapsed .sidebar { width: 62px; }
+      .sidebar-collapsed header { margin-left: 62px; }
+      .sidebar-collapsed main { margin-left: 62px; }
+      .sidebar-collapsed .sidebar-brand span, .sidebar-collapsed .sidebar-group-title, .sidebar-collapsed .sidebar a { display: none; }
+      .sidebar-collapsed .sidebar-brand { margin-left: 3px; }
+      .sidebar-collapsed .collapse-button { right: 17px; }
+      .brand { color: #252332; font-size: 18px; font-weight: 700; }
+      .brand b { display: inline-grid; place-items: center; width: 29px; height: 29px; margin-right: 8px; color: #fff; background: #5b45e5; border-radius: 8px; }
+      .mode { color: #777481; font-size: 12px; }
+      main { max-width: 1240px; margin: 52px 0 50px 250px; padding: 0 5% 50px; transition: margin-left .2s ease; }
+      .eyebrow { color: #a19fa9; font-size: 10px; font-weight: 700; letter-spacing: 1.7px; }
+      h1 { margin: 13px 0 10px; font-size: 36px; letter-spacing: -1px; }
+      .intro { max-width: 670px; color: #92909c; line-height: 1.6; }
+      .section-title { margin: 38px 0 15px; font-size: 18px; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+      .grid { display: none; }
+      .module-detail { max-width: 760px; margin-top: 34px; padding: 28px; background: #fff; border: 1px solid #e9e8ee; border-radius: 14px; }
+      .module-detail[hidden] { display: none; }
+      .module-detail-label { color: #5b45e5; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+      .module-detail h2 { margin: 10px 0 8px; font-size: 24px; }
+      .module-detail p { max-width: 620px; margin: 0; color: #777481; line-height: 1.6; }
+      .module-workspace { margin-top: 25px; }
+      .workspace-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; padding: 18px; background: #f8f7ff; border: 1px solid #ebe9ff; border-radius: 11px; }
+      .workspace-form label { display: grid; gap: 6px; color: #777481; font-size: 11px; font-weight: 600; }
+      .workspace-form input, .workspace-form select { width: 100%; padding: 10px 11px; border: 1px solid #dedbe9; border-radius: 7px; background: #fff; color: #252332; font: inherit; }
+      .workspace-form button { grid-column: 1 / -1; justify-self: start; padding: 10px 17px; border: 0; border-radius: 7px; color: #fff; background: #5b45e5; font-weight: 700; cursor: pointer; }
+      .records { width: 100%; margin-top: 22px; overflow-x: auto; }
+      .records h3 { margin: 0 0 10px; font-size: 14px; }
+      .records table { min-width: 620px; }
+      .delete-record { padding: 5px 8px; border: 0; border-radius: 5px; color: #b45d5d; background: #fff0f0; cursor: pointer; }
+      .empty-records { color: #92909c; font-size: 12px; }
+      .po-scan { padding: 18px; background: #f8f7ff; border: 1px solid #ebe9ff; border-radius: 11px; }
+      .po-scan h3, .po-details h3 { margin: 0 0 8px; font-size: 14px; }
+      .po-scan p { margin: 0 0 14px; color: #777481; font-size: 11px; }
+      .scan-row { display: flex; gap: 9px; }
+      .scan-row input { flex: 1; min-width: 0; padding: 10px 11px; border: 1px solid #dedbe9; border-radius: 7px; background: #fff; }
+      .scan-row button, .grn-submit { padding: 10px 16px; border: 0; border-radius: 7px; color: #fff; background: #5b45e5; font-weight: 700; cursor: pointer; }
+      .po-details { margin-top: 18px; padding: 18px; background: #fff; border: 1px solid #e9e8ee; border-radius: 11px; }
+      .po-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 16px; color: #777481; font-size: 11px; }
+      .po-meta strong { display: block; margin-top: 4px; color: #252332; font-size: 13px; }
+      .po-products { width: 100%; border-collapse: collapse; font-size: 11px; }
+      .po-products th, .po-products td { padding: 10px 7px; border-bottom: 1px solid #f0eff3; text-align: left; }
+      .po-products th { color: #aaa8b1; font-size: 10px; }
+      .scan-status { margin: 14px 0; padding: 10px 12px; color: #777481; background: #faf9ff; border-radius: 7px; font-size: 11px; }
+      .scan-status.success { color: #27865e; background: #effaf4; }
+      .grn-submit { margin-top: 15px; }
+      @media (max-width: 560px) { .workspace-form { grid-template-columns: 1fr; } }
+      .dashboard { margin-top: 30px; }
+      .dashboard[hidden] { display: none; }
+      .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      .kpi { padding: 18px; background: #fff; border: 1px solid #e9e8ee; border-radius: 12px; }
+      .kpi small { color: #92909c; font-size: 11px; }
+      .kpi strong { display: block; margin-top: 9px; font-size: 25px; }
+      .kpi em { color: #36a678; font-size: 10px; font-style: normal; }
+      .chart-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; margin-top: 15px; }
+      .chart-card { padding: 20px; background: #fff; border: 1px solid #e9e8ee; border-radius: 12px; }
+      .chart-card h3 { margin: 0 0 16px; font-size: 14px; }
+      .chart-card p { margin: -10px 0 14px; color: #92909c; font-size: 11px; }
+      .line-chart { width: 100%; height: 190px; }
+      .line-chart .axis { stroke: #e9e8ee; stroke-width: 1; }
+      .line-chart .line-one { fill: none; stroke: #5b45e5; stroke-width: 3; }
+      .line-chart .line-two { fill: none; stroke: #5fc48a; stroke-width: 3; }
+      .legend { display: flex; gap: 16px; margin-top: 8px; color: #777481; font-size: 10px; }
+      .legend i { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; background: #5b45e5; }
+      .legend i.green { background: #5fc48a; }
+      .bar-row { display: grid; grid-template-columns: 80px 1fr 35px; gap: 8px; align-items: center; margin: 18px 0; color: #777481; font-size: 10px; }
+      .bar { height: 9px; overflow: hidden; background: #f0eff5; border-radius: 6px; }
+      .bar b { display: block; height: 100%; background: #5b45e5; border-radius: inherit; }
+      .bar b.green { background: #5fc48a; }
+      .bar b.orange { background: #f1ae57; }
+      .table-card { margin-top: 15px; padding: 20px; background: #fff; border: 1px solid #e9e8ee; border-radius: 12px; }
+      .table-card h3 { margin: 0 0 14px; font-size: 14px; }
+      table { width: 100%; border-collapse: collapse; color: #777481; font-size: 11px; }
+      th, td { padding: 11px 8px; border-bottom: 1px solid #f0eff3; text-align: left; }
+      th { color: #aaa8b1; font-size: 10px; font-weight: 600; }
+      .module { min-height: 145px; padding: 20px; background: #fff; border: 1px solid #e9e8ee; border-radius: 12px; }
+      .module span { color: #5b45e5; font-size: 11px; font-weight: 700; }
+      .module h3 { margin: 12px 0 7px; font-size: 15px; }
+      .module p { margin: 0; color: #92909c; font-size: 12px; line-height: 1.5; }
+      .back { display: inline-block; margin-top: 32px; color: #5b45e5; font-weight: 700; text-decoration: none; font-size: 13px; }
+      @media (max-width: 800px) { header { margin-left: 62px; } main { margin-left: 62px; padding-left: 25px; } .sidebar { width: 62px; } .sidebar-brand span, .sidebar-group-title, .sidebar a { display: none; } .sidebar-brand { margin-left: 3px; } .grid { grid-template-columns: repeat(2, 1fr); } .kpi-grid, .chart-row { grid-template-columns: 1fr 1fr; } }
+      @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar" id="warehouseSidebar">
+      <div class="sidebar-brand"><b id="warehouseLogo" title="Show sidebar">▦</b><span>Warehouse</span></div>
+      <button class="collapse-button" id="collapseSidebar" aria-label="Minimize sidebar">‹</button>
+      <nav aria-label="Warehouse modules">
+        <div class="sidebar-group"><p class="sidebar-group-title">Overview</p><a class="active" href="#dashboard">Dashboard</a><a href="#reports">Reports &amp; analytics</a></div>
+        <div class="sidebar-group"><p class="sidebar-group-title">Setup &amp; masters</p><a href="#warehouse-setup">Warehouse &amp; locations</a><a href="#products">Products, SKU &amp; partners</a><a href="#users">Users, roles &amp; notifications</a></div>
+        <div class="sidebar-group"><p class="sidebar-group-title">Inbound</p><a href="#purchase">Purchase orders &amp; ASN</a><a href="#inward">Inward management</a><a href="#quality">GRN &amp; quality check</a><a href="#putaway">Putaway management</a></div>
+        <div class="sidebar-group"><p class="sidebar-group-title">Inventory</p><a href="#inventory">Stock management</a><a href="#transfers">Transfers &amp; adjustments</a><a href="#audit">Stock audit</a></div>
+        <div class="sidebar-group"><p class="sidebar-group-title">Outbound</p><a href="#orders">B2B &amp; B2C orders</a><a href="#allocation">Order allocation</a><a href="#picking">Picking &amp; packing</a><a href="#dispatch">Outward &amp; dispatch</a><a href="#shipping">Shipping &amp; delivery</a></div>
+        <div class="sidebar-group"><p class="sidebar-group-title">After sales</p><a href="#returns">Returns management</a><a href="#billing">Invoices &amp; billing</a><a href="#integrations">ERP, EDI &amp; marketplace</a></div>
+      </nav>
+    </aside>
+    <header><div class="brand"><b>S</b>servicedesk</div><div class="mode">Desktop web workspace · Warehouse management</div></header>
+    <main>
+      <span class="eyebrow">WAREHOUSE MANAGEMENT</span>
+      <h1 id="dashboard">B2B &amp; B2C warehouse workspace</h1>
+      <p class="intro">Manage goods from receiving and GRN verification through putaway, inventory control, picking, packing, dispatch, transfers, returns, and reporting.</p>
+      <section class="dashboard" id="dashboardView">
+        <div class="kpi-grid">
+          <div class="kpi"><small>Total stock units</small><strong>24,860</strong><em>↑ 8.4% this month</em></div>
+          <div class="kpi"><small>Open orders</small><strong>1,284</strong><em>↑ 12.1% this week</em></div>
+          <div class="kpi"><small>Ready to dispatch</small><strong>436</strong><em>On schedule</em></div>
+          <div class="kpi"><small>Low stock alerts</small><strong>18</strong><em style="color:#e18b42">Needs attention</em></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card"><h3>Orders &amp; dispatch trend</h3><p>Last 7 days across B2B and B2C channels</p><svg class="line-chart" viewBox="0 0 620 190" role="img" aria-label="Orders and dispatch trend chart"><line class="axis" x1="25" y1="25" x2="600" y2="25"/><line class="axis" x1="25" y1="75" x2="600" y2="75"/><line class="axis" x1="25" y1="125" x2="600" y2="125"/><line class="axis" x1="25" y1="175" x2="600" y2="175"/><polyline class="line-one" points="25,135 120,104 215,119 310,73 405,91 500,50 595,64"/><polyline class="line-two" points="25,156 120,140 215,145 310,111 405,119 500,82 595,96"/></svg><div class="legend"><span><i></i>Orders</span><span><i class="green"></i>Dispatched</span></div></div>
+          <div class="chart-card"><h3>Stock by category</h3><p>Current available inventory</p><div class="bar-row"><span>Apparel</span><div class="bar"><b style="width:82%"></b></div><strong>82%</strong></div><div class="bar-row"><span>Electronics</span><div class="bar"><b class="green" style="width:64%"></b></div><strong>64%</strong></div><div class="bar-row"><span>Home goods</span><div class="bar"><b class="orange" style="width:47%"></b></div><strong>47%</strong></div><div class="bar-row"><span>Accessories</span><div class="bar"><b style="width:35%"></b></div><strong>35%</strong></div></div>
+        </div>
+        <div class="table-card"><h3>Top performing products</h3><table><thead><tr><th>SKU CODE</th><th>PRODUCT</th><th>AVAILABLE</th><th>REVENUE</th></tr></thead><tbody><tr><td>SH-A23</td><td>Classic shirt</td><td>1,240</td><td>₹2.48L</td></tr><tr><td>MX-673</td><td>Men t-shirt</td><td>980</td><td>₹1.76L</td></tr><tr><td>TP-8364</td><td>Women top</td><td>760</td><td>₹1.32L</td></tr><tr><td>SH-8574</td><td>Shirt-A23</td><td>540</td><td>₹98K</td></tr></tbody></table></div>
+      </section>
+      <section class="module-detail" id="moduleDetail" hidden>
+        <span class="module-detail-label" id="detailLabel">MODULE</span>
+        <h2 id="detailTitle">Select a module</h2>
+        <p id="detailDescription">Use the left sidebar to open a warehouse module.</p>
+        <div class="module-workspace" id="moduleWorkspace"></div>
+      </section>
+      <section class="grid">
+        <article class="module"><span>CONTROL CENTER</span><h3>Warehouse dashboard</h3><p>See today's receiving, orders, dispatches, stock alerts, and pending tasks.</p></article>
+        <article class="module" id="warehouse-setup"><span>SETUP</span><h3>Warehouse &amp; location setup</h3><p>Configure warehouses, zones, racks, shelves, bins, and storage capacity.</p></article>
+        <article class="module" id="products"><span>MASTER DATA</span><h3>Products, SKU &amp; partners</h3><p>Manage products, variants, units, vendors, distributors, retailers, and customers.</p></article>
+        <article class="module" id="purchase"><span>PROCUREMENT</span><h3>Purchase orders &amp; ASN</h3><p>Create purchase orders and prepare advance shipment notices for incoming goods.</p></article>
+        <article class="module" id="inward"><span>INWARD</span><h3>Inward management</h3><p>Create GRNs against approved POs or ASNs, verify received quantities and quality, assign shelf/bin locations, and make good stock available for sale.</p></article>
+        <article class="module" id="quality"><span>QUALITY</span><h3>GRN &amp; quality check</h3><p>Verify quantities, documents, damage, expiry, batch, and accepted or rejected stock.</p></article>
+        <article class="module" id="putaway"><span>STORAGE</span><h3>Putaway management</h3><p>Allocate received stock to the right rack, zone, or bin.</p></article>
+        <article class="module" id="inventory"><span>INVENTORY</span><h3>Stock management</h3><p>Track available, reserved, damaged, batch, serial, expiry, SKU, and variant stock.</p></article>
+        <article class="module" id="orders"><span>ORDERS</span><h3>B2B &amp; B2C order management</h3><p>Manage bulk business orders and individual customer or marketplace orders.</p></article>
+        <article class="module" id="allocation"><span>ALLOCATION</span><h3>Order allocation</h3><p>Reserve stock by warehouse, priority, channel, batch, and delivery commitment.</p></article>
+        <article class="module" id="picking"><span>OUTWARD</span><h3>Picking &amp; packing</h3><p>Support bulk carton/pallet picking and individual item orders.</p></article>
+        <article class="module" id="dispatch"><span>DISPATCH</span><h3>Outward management</h3><p>Prepare B2B dispatches and B2C customer shipments.</p></article>
+        <article class="module" id="shipping"><span>SHIPPING</span><h3>Shipping &amp; delivery</h3><p>Select courier or transporter, print labels, track shipments, and manage delivery status.</p></article>
+        <article class="module" id="transfers"><span>CONTROL</span><h3>Transfers &amp; adjustments</h3><p>Move stock between locations and adjust missing, excess, or damaged goods.</p></article>
+        <article class="module" id="returns"><span>RETURNS</span><h3>Returns management</h3><p>Receive, inspect, and process bulk or individual customer returns.</p></article>
+        <article class="module" id="audit"><span>AUDIT</span><h3>Stock audit</h3><p>Match physical inventory with system stock and reconcile differences.</p></article>
+        <article class="module" id="billing"><span>BILLING</span><h3>Invoices &amp; billing</h3><p>Generate B2B invoices, customer invoices, credit notes, and dispatch documents.</p></article>
+        <article class="module" id="integrations"><span>INTEGRATIONS</span><h3>ERP, EDI &amp; marketplace</h3><p>Connect ERP, EDI purchase orders, Shopify, Amazon, Flipkart, and courier APIs.</p></article>
+        <article class="module" id="reports"><span>REPORTS</span><h3>Reports &amp; analytics</h3><p>Review inward, outward, stock movement, and inventory performance.</p></article>
+        <article class="module" id="users"><span>ADMIN</span><h3>Users, roles &amp; notifications</h3><p>Control access by role and send alerts for low stock, delays, exceptions, and approvals.</p></article>
+      </section>
+    </main>
+    <script>
+      const page = document.body;
+      const collapseButton = document.querySelector('#collapseSidebar');
+      const detail = document.querySelector('#moduleDetail');
+      const detailLabel = document.querySelector('#detailLabel');
+      const detailTitle = document.querySelector('#detailTitle');
+      const detailDescription = document.querySelector('#detailDescription');
+      const dashboard = document.querySelector('#dashboardView');
+      const moduleWorkspace = document.querySelector('#moduleWorkspace');
+      const moduleCatalog = {
+        'warehouse-setup': ['SETUP', 'Warehouse & location setup', 'Configure warehouses, zones, racks, shelves, bins, and storage capacity.', 'Add location', [['location', 'Warehouse / location'], ['type', 'Location type'], ['capacity', 'Capacity']]],
+        products: ['MASTER DATA', 'Products, SKU & partners', 'Manage products, variants, units, vendors, distributors, retailers, and customers.', 'Add product', [['sku', 'SKU code'], ['name', 'Product name'], ['category', 'Category'], ['unit', 'Unit']]],
+        purchase: ['PROCUREMENT', 'Purchase orders & ASN', 'Create purchase orders and prepare advance shipment notices for incoming goods.', 'Create purchase order', [['vendor', 'Vendor'], ['reference', 'PO number'], ['expectedDate', 'Expected date', 'date'], ['items', 'Items / SKU']]],
+        inward: ['INWARD', 'Inward management', 'Create GRNs against approved POs or ASNs, verify received quantities and quality, assign shelf/bin locations, and make good stock available for sale.', 'Create GRN', [['supplier', 'Supplier'], ['invoiceId', 'Supplier invoice ID'], ['receiptDate', 'GRN date', 'date'], ['reference', 'Approved PO / ASN'], ['sku', 'SKU code'], ['quantity', 'Received quantity', 'number'], ['batch', 'Batch / lot'], ['bin', 'Bin / shelf location'], ['qcStatus', 'QC status', 'select', ['Pass', 'Fail', 'Pending']], ['rejectionReason', 'Rejection reason'], ['unitCost', 'Unit cost', 'number'], ['manufacturingDate', 'Manufacturing date', 'date'], ['expiryDate', 'Expiry date', 'date'], ['serialStart', 'Serial start number'], ['serialCount', 'Serial count', 'number']]],
+        quality: ['QUALITY', 'GRN & quality check', 'Verify quantities, documents, damage, expiry, batch, and accepted or rejected stock.', 'Record quality check', [['grn', 'GRN number'], ['batch', 'Batch / lot'], ['accepted', 'Accepted quantity', 'number'], ['rejected', 'Rejected quantity', 'number']]],
+        putaway: ['STORAGE', 'Putaway management', 'Allocate received stock to the right rack, zone, or bin.', 'Create putaway', [['grn', 'GRN number'], ['sku', 'SKU code'], ['bin', 'Rack / bin'], ['quantity', 'Quantity', 'number']]],
+        inventory: ['INVENTORY', 'Stock management', 'Track available, reserved, damaged, batch, serial, expiry, SKU, and variant stock.', 'Add stock entry', [['sku', 'SKU code'], ['location', 'Location'], ['batch', 'Batch / serial'], ['quantity', 'Quantity', 'number']]],
+        orders: ['ORDERS', 'B2B & B2C order management', 'Manage bulk business orders and individual customer or marketplace orders.', 'Create order', [['order', 'Order number'], ['channel', 'B2B / B2C channel'], ['customer', 'Customer / business'], ['items', 'Items / SKU']]],
+        allocation: ['ALLOCATION', 'Order allocation', 'Reserve stock by warehouse, priority, channel, batch, and delivery commitment.', 'Allocate order', [['order', 'Order number'], ['warehouse', 'Warehouse'], ['priority', 'Priority'], ['quantity', 'Allocated quantity', 'number']]],
+        picking: ['OUTWARD', 'Picking & packing', 'Support bulk carton/pallet picking and individual item orders.', 'Create pick list', [['order', 'Order number'], ['picker', 'Picker name'], ['items', 'Items / SKU'], ['packages', 'Packages', 'number']]],
+        dispatch: ['DISPATCH', 'Outward management', 'Prepare B2B dispatches and B2C customer shipments.', 'Create dispatch', [['order', 'Order number'], ['customer', 'Customer / store'], ['invoice', 'Invoice number'], ['quantity', 'Packages', 'number']]],
+        shipping: ['SHIPPING', 'Shipping & delivery', 'Select courier or transporter, print labels, track shipments, and manage delivery status.', 'Create shipment', [['dispatch', 'Dispatch number'], ['carrier', 'Courier / transporter'], ['tracking', 'Tracking number'], ['status', 'Delivery status']]],
+        transfers: ['CONTROL', 'Transfers & adjustments', 'Move stock between locations and adjust missing, excess, or damaged goods.', 'Create stock movement', [['sku', 'SKU code'], ['from', 'From location'], ['to', 'To location'], ['quantity', 'Quantity', 'number']]],
+        returns: ['RETURNS', 'Returns management', 'Receive, inspect, and process bulk or individual customer returns.', 'Create return', [['reference', 'Order / return number'], ['customer', 'Customer / business'], ['reason', 'Return reason'], ['quantity', 'Quantity', 'number']]],
+        audit: ['AUDIT', 'Stock audit', 'Match physical inventory with system stock and reconcile differences.', 'Start stock audit', [['location', 'Location'], ['sku', 'SKU code'], ['systemStock', 'System quantity', 'number'], ['physicalStock', 'Physical quantity', 'number']]],
+        billing: ['BILLING', 'Invoices & billing', 'Generate B2B invoices, customer invoices, credit notes, and dispatch documents.', 'Create invoice', [['invoice', 'Invoice number'], ['customer', 'Customer / business'], ['amount', 'Amount'], ['dueDate', 'Due date', 'date']]],
+        integrations: ['INTEGRATIONS', 'ERP, EDI & marketplace', 'Connect ERP, EDI purchase orders, Shopify, Amazon, Flipkart, and courier APIs.', 'Add integration', [['platform', 'Platform / system'], ['type', 'Integration type'], ['endpoint', 'API / endpoint'], ['status', 'Connection status']]],
+        reports: ['REPORTS', 'Reports & analytics', 'Review inward, outward, stock movement, and inventory performance.', 'Create report request', [['report', 'Report type'], ['from', 'From date', 'date'], ['to', 'To date', 'date'], ['format', 'Format']]],
+        users: ['ADMIN', 'Users, roles & notifications', 'Control access by role and send alerts for low stock, delays, exceptions, and approvals.', 'Add user', [['name', 'User name'], ['email', 'Email'], ['role', 'Role'], ['access', 'Access level']]]
+      };
+      const escapeHtml = (value) => String(value || '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+      const purchaseOrders = {
+        'PO-1001': { supplier: 'ABC Distributors', date: '2026-11-17', status: 'Approved', products: [{ sku: 'SH-A23', name: 'Classic Shirt', ordered: 120 }, { sku: 'MX-673', name: 'Men T-Shirt', ordered: 80 }, { sku: 'TP-8364', name: 'Women Top', ordered: 60 }] },
+        'PO-1002': { supplier: 'Global Wholesale', date: '2026-11-16', status: 'Approved', products: [{ sku: 'SH-8574', name: 'Shirt A23', ordered: 100 }, { sku: 'WM-2201', name: 'Women Denim', ordered: 45 }] }
+      };
+      function renderInwardWorkspace() {
+        let activePO = null;
+        const selected = new Set();
+        const scanned = {};
+        moduleWorkspace.innerHTML = `<div class="po-scan"><h3>Scan approved PO / ASN</h3><p>Scan the PO barcode or enter a PO number. Try PO-1001 or PO-1002 for this demo.</p><div class="scan-row"><input id="poScanner" placeholder="Scan PO barcode or enter PO number" autocomplete="off"><button id="scanPO" type="button">Scan PO</button></div></div><div id="poDetails"></div>`;
+        const poDetails = document.querySelector('#poDetails');
+        const renderPO = () => {
+          if (!activePO) return;
+          poDetails.innerHTML = `<div class="po-details"><h3>Purchase order details</h3><div class="po-meta"><span>PO number<strong>${escapeHtml(activePO.number)}</strong></span><span>Supplier<strong>${escapeHtml(activePO.supplier)}</strong></span><span>PO date<strong>${escapeHtml(activePO.date)}</strong></span><span>Status<strong>${escapeHtml(activePO.status)}</strong></span></div><table class="po-products"><thead><tr><th>Select</th><th>SKU</th><th>Product name</th><th>Ordered qty</th><th>Scanned qty</th><th>Status</th></tr></thead><tbody>${activePO.products.map((product) => `<tr><td><input class="po-product-select" type="checkbox" data-sku="${product.sku}" ${selected.has(product.sku) ? 'checked' : ''}></td><td>${product.sku}</td><td>${product.name}</td><td>${product.ordered}</td><td>${scanned[product.sku] || 0}</td><td>${(scanned[product.sku] || 0) >= product.ordered ? 'Complete' : 'Pending scan'}</td></tr>`).join('')}</tbody></table><div class="scan-status ${Object.keys(scanned).length ? 'success' : ''}" id="scanStatus">${Object.keys(scanned).length ? 'SKU scan recorded. Select all required products and continue scanning.' : 'Select the products you are receiving, then scan each SKU barcode.'}</div><div class="scan-row"><input id="skuScanner" placeholder="Scan selected SKU barcode" autocomplete="off"><button id="scanSKU" type="button">Scan SKU</button></div><button class="grn-submit" id="createScannedGRN" type="button">Create GRN from scanned products</button></div>`;
+          poDetails.querySelectorAll('.po-product-select').forEach((checkbox) => checkbox.addEventListener('change', () => checkbox.checked ? selected.add(checkbox.dataset.sku) : selected.delete(checkbox.dataset.sku)));
+          document.querySelector('#scanSKU').addEventListener('click', () => {
+            const sku = document.querySelector('#skuScanner').value.trim().toUpperCase();
+            const product = activePO.products.find((item) => item.sku === sku);
+            if (!product) return alert('This SKU is not present in the scanned PO.');
+            if (!selected.has(sku)) return alert('Select this product first, then scan its SKU.');
+            if ((scanned[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU.');
+            scanned[sku] = (scanned[sku] || 0) + 1;
+            renderPO();
+            document.querySelector('#skuScanner').focus();
+          });
+          document.querySelector('#createScannedGRN').addEventListener('click', () => {
+            const received = activePO.products.filter((product) => selected.has(product.sku) && scanned[product.sku]);
+            if (!received.length) return alert('Select at least one product and scan its SKU before creating the GRN.');
+            const records = JSON.parse(localStorage.getItem('warehouse-inward') || '[]');
+            records.unshift({ po: activePO.number, supplier: activePO.supplier, products: received.map((product) => `${product.sku} (${scanned[product.sku]}/${product.ordered})`).join(', '), quantity: received.reduce((total, product) => total + scanned[product.sku], 0), qcStatus: 'Pending', createdAt: new Date().toISOString() });
+            localStorage.setItem('warehouse-inward', JSON.stringify(records));
+            alert('GRN created successfully from the scanned PO products.');
+            renderPO();
+          });
+        };
+        document.querySelector('#scanPO').addEventListener('click', () => {
+          const number = document.querySelector('#poScanner').value.trim().toUpperCase();
+          const po = purchaseOrders[number];
+          if (!po) return alert('PO not found or not approved for GRN. Try PO-1001.');
+          activePO = { ...po, number };
+          renderPO();
+        });
+        document.querySelector('#poScanner').addEventListener('keydown', (event) => { if (event.key === 'Enter') document.querySelector('#scanPO').click(); });
+      }
+      function renderWorkspace(id) {
+        const config = moduleCatalog[id];
+        if (!config) return;
+        if (id === 'inward') return renderInwardWorkspace();
+        const [label, title, description, action, fields] = config;
+        const storageKey = `warehouse-${id}`;
+        const records = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        moduleWorkspace.innerHTML = `<form class="workspace-form" id="moduleForm">${fields.map(([name, fieldLabel, type = 'text', options = []]) => `<label>${fieldLabel}${type === 'select' ? `<select name="${name}" required>${options.map((option) => `<option>${option}</option>`).join('')}</select>` : `<input name="${name}" type="${type}" required>`}</label>`).join('')}<button type="submit">${action}</button></form><div class="records"><h3>Recent records</h3>${records.length ? `<table><thead><tr>${fields.map(([, fieldLabel]) => `<th>${fieldLabel}</th>`).join('')}<th>Action</th></tr></thead><tbody>${records.map((record, index) => `<tr>${fields.map(([name]) => `<td>${escapeHtml(record[name])}</td>`).join('')}<td><button class="delete-record" data-index="${index}">Delete</button></td></tr>`).join('')}</tbody></table>` : '<p class="empty-records">No records yet. Use the form above to create the first record.</p>'}</div>`;
+        document.querySelector('#moduleForm').addEventListener('submit', (event) => {
+          event.preventDefault();
+          const formValues = Object.fromEntries(new FormData(event.currentTarget));
+          if (id === 'inward' && formValues.qcStatus === 'Fail' && !formValues.rejectionReason.trim()) return alert('Rejection reason is required when QC status is Fail.');
+          if (id === 'inward' && formValues.manufacturingDate && formValues.expiryDate && formValues.expiryDate <= formValues.manufacturingDate) return alert('Expiry date must be after manufacturing date.');
+          if (id === 'inward' && formValues.serialStart && !Number(formValues.serialCount)) return alert('Enter serial count when generating serial numbers.');
+          const nextRecords = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          nextRecords.unshift(formValues);
+          localStorage.setItem(storageKey, JSON.stringify(nextRecords));
+          renderWorkspace(id);
+        });
+        moduleWorkspace.querySelectorAll('.delete-record').forEach((button) => button.addEventListener('click', () => {
+          const nextRecords = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          nextRecords.splice(Number(button.dataset.index), 1);
+          localStorage.setItem(storageKey, JSON.stringify(nextRecords));
+          renderWorkspace(id);
+        }));
+      }
+      collapseButton.addEventListener('click', () => {
+        page.classList.toggle('sidebar-collapsed');
+        const collapsed = page.classList.contains('sidebar-collapsed');
+        collapseButton.textContent = collapsed ? '›' : '‹';
+        collapseButton.setAttribute('aria-label', collapsed ? 'Show sidebar' : 'Minimize sidebar');
+      });
+      document.querySelector('#warehouseLogo').addEventListener('click', () => {
+        page.classList.remove('sidebar-collapsed');
+        collapseButton.textContent = '‹';
+      });
+      document.querySelectorAll('.sidebar a').forEach((link) => link.addEventListener('click', (event) => {
+        const target = document.querySelector(link.getAttribute('href'));
+        if (!target || target.id === 'dashboard') {
+          detail.hidden = true;
+          dashboard.hidden = false;
+          return;
+        }
+        event.preventDefault();
+        document.querySelectorAll('.sidebar a').forEach((item) => item.classList.remove('active'));
+        link.classList.add('active');
+        detailLabel.textContent = target.querySelector('span').textContent;
+        detailTitle.textContent = target.querySelector('h3').textContent;
+        detailDescription.textContent = target.querySelector('p').textContent;
+        detail.hidden = false;
+        dashboard.hidden = true;
+        renderWorkspace(target.id);
+      }));
+    </script>
+  </body>
+</html>

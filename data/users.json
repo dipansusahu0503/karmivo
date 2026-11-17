@@ -21,5 +21,13 @@
     "name": "Mismatch Test",
     "passwordHash": "854a9206d78ea7e00e8c3ea1e087ce76:3f47d08eff2f0aaf1c2b3d92e0f98ac9f793a9ca157164e741c12e0e06cacfc31d04eaeb8b1b41190c64513e0ed1817bf1a042b0aec2387c84875143fc924c47",
     "createdAt": "2026-11-17T07:01:09.500Z"
+  },
+  {
+    "id": "861d4ad5-6619-4f46-999f-a1f70a2ff364",
+    "username": "dipansu1999",
+    "email": "dipansusahu1999@gmail.com",
+    "name": "Dipansu Sahu",
+    "passwordHash": "474b94320c980caddfa2d6d3f545699d:1e3f28801eac9da1d99b4d6f68f175669ff4284f4d8f6c225ffc3a76b2a124c978606d7f1240190c0e9e39ba20119c9f81b1b0097eec434407f0785a9a0059c0",
+    "createdAt": "2026-11-17T08:57:52.287Z"
   }
 ]

@@ -1,11 +1,7 @@
-const modal = document.querySelector('#modal');
-const serviceName = document.querySelector('#serviceName');
 const deviceLabel = document.querySelector('#deviceLabel');
 const serviceGrid = document.querySelector('.service-grid');
 const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
-let currentDevice = 'desktop';
 let registerMode = false;
-const isMobile = () => window.matchMedia('(max-width: 760px)').matches;
 
 async function checkAuth() {
   try {
@@ -58,25 +54,21 @@ document.querySelector('#switchMode').addEventListener('click', () => {
 
 document.querySelector('#logoutButton').addEventListener('click', async () => { await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST' }); window.location.reload(); });
 
-function getDeviceType() {
-  return isMobile() ? 'mobile' : 'desktop';
-}
-
 function renderServices(services) {
   serviceGrid.innerHTML = services.map((service) => `
-    <article class="service-card ${service.platform === 'mobile' ? 'featured' : ''}" data-service-id="${service.id}" data-platform="${service.platform}">
-      <div class="card-top"><span class="service-icon ${service.color}">${service.icon}</span><span class="platform-badge ${service.platform === 'mobile' ? 'mobile-badge' : 'desktop-badge'}">${service.platform === 'mobile' ? '◉ Mobile app' : '▣ Desktop only'}</span></div>
+    <article class="service-card" data-service-id="${service.id}" data-platform="${service.platform}">
+      <div class="card-top"><span class="service-icon ${service.color}">${service.icon}</span><span class="platform-badge desktop-badge">▣ Web service</span></div>
       <div class="card-body"><h3>${service.name}</h3><p>${service.description}</p></div>
-      <div class="card-footer"><span class="available">● ${service.platform === 'mobile' ? 'Available on mobile' : 'Ready to use'}</span><button class="launch-button" data-service-id="${service.id}">Open service <span>↗</span></button></div>
+      <div class="card-footer"><span class="available">● Ready to use</span><button class="launch-button" data-service-id="${service.id}">Open service <span>↗</span></button></div>
     </article>`).join('');
-  serviceGrid.querySelectorAll('.launch-button').forEach((button) => button.addEventListener('click', () => launchService(button.dataset.serviceId, button.closest('.service-card').dataset.platform)));
+  serviceGrid.querySelectorAll('.launch-button').forEach((button) => button.addEventListener('click', () => launchService(button.dataset.serviceId)));
+  serviceGrid.querySelectorAll('.platform-badge').forEach((badge) => { badge.textContent = '▣ Web service'; });
 }
 
 async function loadServices() {
-  currentDevice = getDeviceType();
-  deviceLabel.textContent = currentDevice === 'mobile' ? 'Mobile device detected' : 'Desktop device detected';
+  deviceLabel.textContent = 'Desktop web workspace';
   try {
-    const response = await fetch(`${API_BASE}/api/services`, { headers: { 'X-Device-Type': currentDevice } });
+    const response = await fetch(`${API_BASE}/api/services`);
     if (!response.ok) throw new Error('Unable to load services');
     const data = await response.json();
     renderServices(data.services);
@@ -85,46 +77,22 @@ async function loadServices() {
   }
 }
 
-async function launchService(id, platform) {
-  const browserTab = platform === 'desktop' && currentDevice === 'mobile' ? window.open('about:blank', '_blank') : null;
+async function launchService(id) {
   try {
-    const response = await fetch(`${API_BASE}/api/services/${id}/launch`, { method: 'POST', headers: { 'X-Device-Type': currentDevice } });
+    const response = await fetch(`${API_BASE}/api/services/${id}/launch`, { method: 'POST' });
     const data = await response.json();
-    if (response.status === 403 && data.error === 'DESKTOP_ONLY') {
-      if (browserTab) browserTab.location.href = `${API_BASE}${data.browserUrl}?desktop=1`;
-      else window.location.href = `${API_BASE}${data.browserUrl}?desktop=1`;
-      return;
-    }
     if (!response.ok) throw new Error(data.error || 'Unable to open service');
-    alert(data.message);
+    window.location.href = `${API_BASE}${data.browserUrl}`;
   } catch (error) {
     alert('The backend is unavailable. Start the server with npm start and try again.');
   }
 }
 
-function openDesktopWarning(name) {
-  serviceName.textContent = name;
-  modal.hidden = false;
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-  modal.hidden = true;
-  document.body.style.overflow = '';
-}
-
-document.querySelector('#closeModal').addEventListener('click', closeModal);
-document.querySelector('#modalAction').addEventListener('click', closeModal);
-modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) closeModal(); });
-document.querySelector('.mobile-menu').addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
 document.querySelector('.tip-banner button').addEventListener('click', (event) => event.currentTarget.parentElement.remove());
 
 function updateDeviceLabel() {
-  currentDevice = getDeviceType();
-  deviceLabel.textContent = currentDevice === 'mobile' ? 'Mobile device detected' : 'Desktop device detected';
+  deviceLabel.textContent = 'Desktop web workspace';
 }
 checkAuth();
 document.querySelector('#username').required = false;
 document.querySelector('#confirmPassword').required = false;
-window.addEventListener('resize', updateDeviceLabel);
