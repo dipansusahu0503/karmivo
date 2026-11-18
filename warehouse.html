@@ -170,6 +170,17 @@
       const detailDescription = document.querySelector('#detailDescription');
       const dashboard = document.querySelector('#dashboardView');
       const moduleWorkspace = document.querySelector('#moduleWorkspace');
+      async function applyWarehousePermissions() {
+        try {
+          const response = await fetch('/api/auth/me');
+          const data = await response.json();
+          if (!data.authenticated || data.user.role === 'admin') return;
+          const permissions = data.user.permissions || [];
+          const required = { purchase: 'purchasing.manage', inward: 'warehouse.inward', 'inward-status': 'warehouse.inward', quality: 'warehouse.quality', putaway: 'warehouse.putaway', inventory: 'warehouse.inventory', dispatch: 'warehouse.dispatch', orders: 'sales.manage', allocation: 'inventory.view', picking: 'warehouse.dispatch', shipping: 'warehouse.dispatch', transfers: 'inventory.adjust', audit: 'inventory.view', billing: 'finance.view', users: 'admin' };
+          document.querySelectorAll('nav a[href^="#"]').forEach((link) => { const moduleId = link.getAttribute('href').slice(1); const permission = required[moduleId]; if (permission && !permissions.includes(permission)) link.hidden = true; });
+          document.querySelectorAll('.module[id]').forEach((card) => { const permission = required[card.id]; if (permission && !permissions.includes(permission)) card.hidden = true; });
+        } catch { /* Keep the standalone warehouse demo available if auth is offline. */ }
+      }
       const moduleCatalog = {
         'warehouse-setup': ['SETUP', 'Warehouse & location setup', 'Configure warehouses, zones, racks, shelves, bins, and storage capacity.', 'Add location', [['location', 'Warehouse / location'], ['type', 'Location type'], ['capacity', 'Capacity']]],
         products: ['MASTER DATA', 'Products, SKU & partners', 'Manage products, variants, units, vendors, distributors, retailers, and customers.', 'Add product', [['sku', 'SKU code'], ['name', 'Product name'], ['category', 'Category'], ['unit', 'Unit']]],
@@ -201,11 +212,12 @@
         const selected = new Set();
         const scanned = {};
         const damaged = {};
+        const previouslyReceived = {};
         moduleWorkspace.innerHTML = `<div class="po-scan"><h3>Scan approved PO / ASN</h3><p>Scan the PO barcode or enter a PO number. Try PO-1001 or PO-1002 for this demo.</p><div class="scan-row"><input id="poScanner" placeholder="Scan PO barcode or enter PO number" autocomplete="off"><button id="scanPO" type="button">Scan PO</button></div></div><div id="poDetails"></div>`;
         const poDetails = document.querySelector('#poDetails');
         const renderPO = () => {
           if (!activePO) return;
-          poDetails.innerHTML = `<div class="po-details"><h3>Purchase order details</h3><div class="po-meta"><span>PO number<strong>${escapeHtml(activePO.number)}</strong></span><span>Supplier<strong>${escapeHtml(activePO.supplier)}</strong></span><span>PO date<strong>${escapeHtml(activePO.date)}</strong></span><span>Status<strong>${escapeHtml(activePO.status)}</strong></span></div><table class="po-products"><thead><tr><th>Select</th><th>SKU</th><th>Product name</th><th>Ordered qty</th><th>Scanned qty</th><th>Status</th></tr></thead><tbody>${activePO.products.map((product) => `<tr><td><input class="po-product-select" type="checkbox" data-sku="${product.sku}" ${selected.has(product.sku) ? 'checked' : ''}></td><td>${product.sku}</td><td>${product.name}</td><td>${product.ordered}</td><td>${scanned[product.sku] || 0}</td><td>${(scanned[product.sku] || 0) >= product.ordered ? 'Complete' : 'Pending scan'}</td></tr>`).join('')}</tbody></table><div class="scan-status ${Object.keys(scanned).length ? 'success' : ''}" id="scanStatus">${Object.keys(scanned).length ? 'SKU entry recorded. Continue until the received quantity is complete.' : 'Select the products you are receiving, then scan or add each SKU manually.'}</div><div class="scan-row"><input id="skuScanner" placeholder="Scan or type selected SKU" autocomplete="off"><button id="scanSKU" type="button">Scan SKU</button><button id="addManualSKU" type="button">Add manually</button></div><button class="grn-submit" id="createScannedGRN" type="button">Create GRN from scanned products</button></div>`;
+           poDetails.innerHTML = `<div class="po-details"><h3>Purchase order details</h3><div class="po-meta"><span>PO number<strong>${escapeHtml(activePO.number)}</strong></span><span>Supplier<strong>${escapeHtml(activePO.supplier)}</strong></span><span>PO date<strong>${escapeHtml(activePO.date)}</strong></span><span>Status<strong>${escapeHtml(activePO.status)}</strong></span></div><table class="po-products"><thead><tr><th>Select</th><th>SKU</th><th>Product name</th><th>Ordered qty</th><th>Scanned qty</th><th>Status</th></tr></thead><tbody>${activePO.products.map((product) => { const totalScanned = (previouslyReceived[product.sku] || 0) + (scanned[product.sku] || 0) + (damaged[product.sku] || 0); return `<tr><td><input class="po-product-select" type="checkbox" data-sku="${product.sku}" ${selected.has(product.sku) ? 'checked' : ''}></td><td>${product.sku}</td><td>${product.name}</td><td>${product.ordered}</td><td>${totalScanned}</td><td>${totalScanned >= product.ordered ? 'Complete' : 'Pending scan'}</td></tr>`; }).join('')}</tbody></table><div class="scan-status ${Object.keys(scanned).length ? 'success' : ''}" id="scanStatus">${Object.keys(scanned).length ? 'SKU entry recorded. Continue until the received quantity is complete.' : 'Select the products you are receiving, then scan or add each SKU manually.'}</div><div class="scan-row"><input id="skuScanner" placeholder="Scan or type selected SKU" autocomplete="off"><button id="scanSKU" type="button">Scan SKU</button><button id="addManualSKU" type="button">Add manually</button></div><button class="grn-submit" id="createScannedGRN" type="button">Create GRN from scanned products</button></div>`;
           const damagedHeader = document.createElement('th');
           damagedHeader.textContent = 'Damaged qty';
           poDetails.querySelector('.po-products thead tr').insertBefore(damagedHeader, poDetails.querySelector('.po-products thead tr').lastElementChild);
@@ -219,7 +231,7 @@
             const damagedCell = document.createElement('td');
             damagedCell.textContent = damaged[product.sku] || 0;
             row.insertBefore(damagedCell, row.lastElementChild);
-            row.lastElementChild.textContent = (scanned[product.sku] || 0) + (damaged[product.sku] || 0) >= product.ordered ? 'Complete' : 'Pending scan';
+             row.lastElementChild.textContent = (previouslyReceived[product.sku] || 0) + (scanned[product.sku] || 0) + (damaged[product.sku] || 0) >= product.ordered ? 'Complete' : 'Pending scan';
             if (!activePO.grnNumber) {
               const actionCell = document.createElement('td');
               actionCell.innerHTML = `<button class="delete-record edit-sku" type="button" data-sku="${product.sku}">Edit</button>`;
@@ -239,7 +251,7 @@
             const product = activePO.products.find((item) => item.sku === sku);
             if (!product) return alert('This SKU is not present in the scanned PO.');
             if (!selected.has(sku)) return alert('Select this product first, then scan its SKU.');
-            if ((scanned[sku] || 0) + (damaged[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU. Use Edit to correct the accepted or damaged quantity.');
+             if ((previouslyReceived[sku] || 0) + (scanned[sku] || 0) + (damaged[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU.');
             scanned[sku] = (scanned[sku] || 0) + 1;
             renderPO();
             document.querySelector('#skuScanner').focus();
@@ -257,7 +269,7 @@
             const product = activePO.products.find((item) => item.sku === sku);
             if (!product) return alert('This SKU is not present in the scanned PO.');
             if (!selected.has(sku)) return alert('Select this product first, then mark it damaged.');
-            if ((scanned[sku] || 0) + (damaged[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU.');
+             if ((previouslyReceived[sku] || 0) + (scanned[sku] || 0) + (damaged[sku] || 0) >= product.ordered) return alert('Ordered quantity limit reached for this SKU.');
             damaged[sku] = (damaged[sku] || 0) + 1;
             renderPO();
             document.querySelector('#skuScanner').focus();
@@ -268,8 +280,7 @@
             const records = JSON.parse(localStorage.getItem('warehouse-inward') || '[]');
             records.unshift({ grnNumber: `GRN-${String(Date.now()).slice(-6)}`, po: activePO.number, supplier: activePO.supplier, productLines: received.map((product) => ({ sku: product.sku, name: product.name, acceptedQuantity: scanned[product.sku] || 0, damagedQuantity: damaged[product.sku] || 0, quantity: (scanned[product.sku] || 0) + (damaged[product.sku] || 0) })), products: received.map((product) => `${product.sku} (${scanned[product.sku] || 0} accepted / ${damaged[product.sku] || 0} damaged)`).join(', '), quantity: received.reduce((total, product) => total + (scanned[product.sku] || 0) + (damaged[product.sku] || 0), 0), qcStatus: 'Pending', status: 'Awaiting QC', createdAt: new Date().toISOString() });
             localStorage.setItem('warehouse-inward', JSON.stringify(records));
-            activePO.grnNumber = records[0].grnNumber;
-            activePO.status = 'GRN Completed';
+             activePO.status = activePO.products.every((product) => (previouslyReceived[product.sku] || 0) + (scanned[product.sku] || 0) + (damaged[product.sku] || 0) >= product.ordered) ? 'GRN Completed' : 'Partially received';
             alert(`GRN ${records[0].grnNumber} created. Assign a location in Stock Management before stock becomes available.`);
             renderPO();
           });
@@ -285,9 +296,9 @@
           const number = document.querySelector('#poScanner').value.trim().toUpperCase();
           const po = purchaseOrders[number];
           if (!po) return alert('PO not found or not approved for GRN. Try PO-1001.');
-          const existingGRN = JSON.parse(localStorage.getItem('warehouse-inward') || '[]').find((record) => record.po === number);
-          activePO = { ...po, number, grnNumber: existingGRN?.grnNumber, status: existingGRN ? 'GRN Completed' : po.status };
-          if (existingGRN?.productLines) existingGRN.productLines.forEach((line) => { scanned[line.sku] = line.acceptedQuantity ?? line.quantity; damaged[line.sku] = line.damagedQuantity || 0; selected.add(line.sku); });
+           const existingGRNs = JSON.parse(localStorage.getItem('warehouse-inward') || '[]').filter((record) => record.po === number);
+           activePO = { ...po, number, status: existingGRNs.length ? 'Partially received' : po.status };
+           existingGRNs.forEach((record) => (record.productLines || []).forEach((line) => { previouslyReceived[line.sku] = (previouslyReceived[line.sku] || 0) + (line.acceptedQuantity || 0) + (line.damagedQuantity || 0); }));
           renderPO();
         });
         document.querySelector('#poScanner').addEventListener('keydown', (event) => { if (event.key === 'Enter') document.querySelector('#scanPO').click(); });
@@ -453,6 +464,7 @@
         dashboard.hidden = true;
         renderWorkspace(target.id);
       }));
+      applyWarehousePermissions();
     </script>
   </body>
 </html>

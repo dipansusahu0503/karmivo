@@ -1,0 +1,86 @@
+services:
+  operations-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: operations
+      POSTGRES_USER: operations_user
+      POSTGRES_PASSWORD: operations_password
+    volumes:
+      - operations-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U operations_user -d operations"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  operations-api:
+    build: ./services/operations
+    environment:
+      DJANGO_DEBUG: "1"
+      DATABASE_URL: postgres://operations_user:operations_password@operations-db:5432/operations
+      SERVICE_NAME: operations
+      COMMERCIAL_URL: http://commercial-api:8000
+      FINANCE_PEOPLE_URL: http://finance-people-api:8000
+    ports: ["8001:8000"]
+    depends_on:
+      operations-db:
+        condition: service_healthy
+
+  commercial-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: commercial
+      POSTGRES_USER: commercial_user
+      POSTGRES_PASSWORD: commercial_password
+    volumes:
+      - commercial-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U commercial_user -d commercial"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  commercial-api:
+    build: ./services/commercial
+    environment:
+      DJANGO_DEBUG: "1"
+      DATABASE_URL: postgres://commercial_user:commercial_password@commercial-db:5432/commercial
+      SERVICE_NAME: commercial
+      OPERATIONS_URL: http://operations-api:8000
+      FINANCE_PEOPLE_URL: http://finance-people-api:8000
+    ports: ["8002:8000"]
+    depends_on:
+      commercial-db:
+        condition: service_healthy
+
+  finance-people-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: finance_people
+      POSTGRES_USER: finance_people_user
+      POSTGRES_PASSWORD: finance_people_password
+    volumes:
+      - finance-people-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finance_people_user -d finance_people"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  finance-people-api:
+    build: ./services/finance_people
+    environment:
+      DJANGO_DEBUG: "1"
+      DATABASE_URL: postgres://finance_people_user:finance_people_password@finance-people-db:5432/finance_people
+      SERVICE_NAME: finance-people
+      OPERATIONS_URL: http://operations-api:8000
+      COMMERCIAL_URL: http://commercial-api:8000
+    ports: ["8003:8000"]
+    depends_on:
+      finance-people-db:
+        condition: service_healthy
+
+volumes:
+  operations-db-data:
+  commercial-db-data:
+  finance-people-db-data:

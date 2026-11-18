@@ -2,3 +2,23 @@
 .auth-screen{min-height:100vh;background:#f8f7ff;display:grid;place-items:center;padding:40px 20px;position:relative;overflow:hidden}.auth-card{position:relative;z-index:1;width:min(100%,420px);background:#fff;border:1px solid #ebe9f5;border-radius:18px;padding:38px 40px 28px;box-shadow:0 20px 60px #3e2e8712}.auth-brand{margin:0 0 43px;justify-content:center}.auth-copy{text-align:center}.auth-copy h1{font:800 27px Manrope;margin:11px 0 8px;letter-spacing:-.8px}.auth-copy p{margin:0 0 28px;color:#9996a5;font-size:12px}.auth-card label{font-size:11px;font-weight:600;color:#57545f;display:block;margin-bottom:16px}.auth-card input{width:100%;display:block;margin-top:8px;border:1px solid #e4e2eb;border-radius:8px;padding:12px 13px;font:12px 'DM Sans';outline:0;color:#302e39}.auth-card input:focus{border-color:#8271e7;box-shadow:0 0 0 3px #8271e71a}.auth-submit,.entra-button{width:100%;border:0;border-radius:8px;padding:12px;font:600 12px 'DM Sans';cursor:pointer;text-align:center;text-decoration:none;display:block}.auth-submit{background:var(--purple);color:#fff}.auth-submit span{font-size:17px;margin-left:7px}.auth-divider{border-top:1px solid #eeeef2;margin:27px 0 17px;text-align:center}.auth-divider span{background:#fff;position:relative;top:-9px;padding:0 10px;color:#b2afbb;font-size:10px}.entra-button{border:1px solid #e3e2e8;color:#57545f;background:#fff}.microsoft-logo{display:inline-grid;grid-template-columns:repeat(2,8px);grid-template-rows:repeat(2,8px);gap:2px;vertical-align:-3px;margin-right:8px}.microsoft-logo i:nth-child(1){background:#f25022}.microsoft-logo i:nth-child(2){background:#7fba00}.microsoft-logo i:nth-child(3){background:#00a4ef}.microsoft-logo i:nth-child(4){background:#ffb900}.auth-switch{text-align:center;color:#9996a5;font-size:11px;margin:22px 0 10px}.auth-switch button{border:0;background:none;color:var(--purple);font:600 11px 'DM Sans';cursor:pointer}.entra-note{text-align:center;color:#b1aeba;font-size:10px;margin:0}.auth-error{color:#d85f58;font-size:11px;min-height:16px;margin:0 0 10px}.auth-decoration{position:absolute;border-radius:50%;filter:blur(1px)}.auth-decoration-one{width:320px;height:320px;background:#e2dcff;left:-120px;top:-80px}.auth-decoration-two{width:280px;height:280px;background:#e1f4f1;right:-80px;bottom:-70px}.logout-button{border:0;background:none;color:#8d8995;font:11px 'DM Sans';cursor:pointer}.logout-button:hover{color:var(--purple)}
 .api-error{grid-column:1/-1;color:#948f9e;background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;font-size:12px}.api-error code{color:var(--purple);font-weight:700}
 .register-only[hidden]{display:none!important}
+.otp-panel { margin: 4px 0 8px; padding: 12px; border: 1px solid #e7e3fb; border-radius: 9px; background: #faf9ff; }
+.otp-panel p { margin: 0 0 10px; color: #777481; font-size: 11px; line-height: 1.4; }
+.otp-row { display: flex; gap: 7px; margin-top: 7px; }
+.otp-row input { min-width: 0; flex: 1; }
+.otp-button { border: 0; border-radius: 6px; padding: 8px 10px; color: #fff; background: #5b45e5; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.otp-status { display: block; margin-top: 8px; color: #27865e; line-height: 1.35; }
+.iam-card { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; padding: 22px; border: 1px solid #e9e7f0; border-radius: 12px; background: #fff; }
+.iam-form { display: grid; gap: 10px; }
+.iam-form label { display: grid; gap: 5px; color: #696678; font-size: 12px; }
+.iam-form input, .iam-form select { border: 1px solid #dedbe9; border-radius: 7px; padding: 10px; background: #fff; }
+.iam-form .auth-submit { width: auto; margin-top: 4px; }
+.iam-list h3 { margin: 0 0 12px; }
+.iam-user { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #efedf4; }
+.iam-user strong, .iam-user small { display: block; }
+.iam-user small { color: #777481; margin-top: 3px; }
+.iam-user select, .iam-user button { border: 1px solid #dedbe9; border-radius: 6px; padding: 7px; background: #fff; }
+.iam-form fieldset { border: 1px solid #e9e7f0; border-radius: 8px; padding: 10px; }
+.iam-form legend { color: #696678; font-size: 12px; padding: 0 4px; }
+.permission-option { display: flex !important; grid-template-columns: auto 1fr; grid-template-columns: 18px 1fr; align-items: center; gap: 7px; margin: 6px 0; }
+.permission-option input { accent-color: #5b45e5; }
