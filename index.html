@@ -34,14 +34,17 @@
     <div class="app-shell">
       <aside class="sidebar">
         <a class="brand" href="#">
-          <span class="brand-mark">S</span>
-          <span>servicedesk</span>
+          <span class="brand-mark">K</span>
+          <span>Karmivo<small>BUSINESS CLOUD</small></span>
         </a>
         <nav class="main-nav" aria-label="Main navigation">
-          <a class="nav-item active" href="#services"><span class="nav-icon">⌘</span>Services</a>
-          <a class="nav-item" href="#activity"><span class="nav-icon">↗</span>Activity</a>
-          <a class="nav-item" href="#settings"><span class="nav-icon">⚙</span>Settings</a>
-          <a class="nav-item" id="iamNav" href="#iam" hidden><span class="nav-icon">IAM</span>User &amp; roles</a>
+          <a class="nav-item active" href="#dashboard"><span class="nav-icon">⌂</span>Home</a>
+          <a class="nav-item" href="#services"><span class="nav-icon">▦</span>Modules</a>
+          <a class="nav-item" id="iamNav" href="#iam" hidden><span class="nav-icon">♙</span>Users &amp; Roles</a>
+          <a class="nav-item" href="#services"><span class="nav-icon">▤</span>Subscription</a>
+          <a class="nav-item" href="#services"><span class="nav-icon">⌂</span>Company</a>
+          <a class="nav-item" href="#services"><span class="nav-icon">▥</span>Reports</a>
+          <a class="nav-item" href="#services"><span class="nav-icon">⚙</span>Settings</a>
         </nav>
         <div class="sidebar-bottom">
           <div class="help-card"><span class="help-icon">?</span><strong>Need a hand?</strong><p>Check the platform guide</p><a href="#">Open guide <span>→</span></a></div>
@@ -50,14 +53,21 @@
       </aside>
 
       <main class="main-content" id="services">
-        <header class="topbar"><div class="breadcrumbs"><span>Workspace</span><span>/</span><strong>Services</strong></div><div class="top-actions"><button class="icon-button" aria-label="Notifications">♧<i></i></button><span class="top-avatar">DS</span><button class="logout-button" id="logoutButton">Log out</button></div></header>
-        <section class="hero">
-          <div><span class="eyebrow">YOUR WORKSPACE</span><h1>Good morning, Dipansu <span>✦</span></h1><p>Choose a web service to get started. Your workspace is optimized for desktop and laptop browsers.</p></div>
-          <div class="date-pill"><span class="calendar">▣</span><span>Tuesday, Nov 17, 2026</span></div>
+        <header class="topbar"><div class="breadcrumbs"><span>Workspace</span><span>/</span><strong>Home</strong></div><div class="top-actions"><button class="icon-button" aria-label="Notifications">♧<i></i></button><span class="top-avatar">DS</span><span class="user-label"><strong class="header-user">Workspace Admin</strong><small>Administrator</small></span><button class="logout-button" id="logoutButton">Log out</button></div></header>
+        <section class="hero dashboard-hero" id="dashboard">
+          <div><span class="eyebrow">YOUR BUSINESS AT A GLANCE</span><h1>Welcome to Karmivo <span>✦</span></h1><p>Your modular business platform. Pick up where your team left off.</p></div>
+          <div class="date-pill"><span class="calendar">▣</span><span id="todayDate">Today</span></div>
+        </section>
+
+        <section class="metric-grid" aria-label="Business overview">
+          <article class="metric-card"><span class="metric-icon cyan">▦</span><span class="metric-label">Total Inventory</span><strong>12,480</strong><small class="metric-note">Across all locations</small></article>
+          <article class="metric-card"><span class="metric-icon mint">♙</span><span class="metric-label">Active Employees</span><strong>320</strong><small class="metric-note">Team members</small></article>
+          <article class="metric-card"><span class="metric-icon violet">▥</span><span class="metric-label">Ongoing Jobs</span><strong>28</strong><small class="metric-note">Production in progress</small></article>
+          <article class="metric-card"><span class="metric-icon amber">🛒</span><span class="metric-label">Open POs</span><strong>18</strong><small class="metric-note">Awaiting delivery</small></article>
         </section>
 
         <section class="content-section">
-          <div class="section-heading"><div><h2>Available services</h2><p>Explore your workspace tools</p></div><div class="device-status"><span class="status-dot"></span><span id="deviceLabel">Detecting device...</span></div></div>
+          <div class="section-heading"><div><h2>Your modules</h2><p>Open a module to manage your workflow</p></div><div class="device-status"><span class="status-dot"></span><span id="deviceLabel">Detecting device...</span></div></div>
           <div class="service-grid">
             <article class="service-card" data-platform="desktop" data-name="Team analytics">
               <div class="card-top"><span class="service-icon blue">▥</span><span class="platform-badge desktop-badge">▣ Desktop only</span></div><div class="card-body"><h3>Team analytics</h3><p>See the numbers behind your team's progress.</p></div><div class="card-footer"><span class="available">● Ready to use</span><button class="launch-button">Open service <span>↗</span></button></div>
@@ -70,8 +80,9 @@
             </article>
           </div>
         </section>
-        <section class="tip-banner"><span class="tip-icon">✦</span><div><strong>Desktop web workspace</strong><p>All services are available through your desktop or laptop browser.</p></div><button aria-label="Dismiss tip">×</button></section>
-        <footer>© 2026 servicedesk <span>•</span> Your workspace, your way.</footer>
+        <section class="insights-panel"><div class="section-heading"><div><h2>Quick insights</h2><p>Business activity at a glance</p></div><a href="#services" class="view-reports">View reports →</a></div><div class="insights-content"><div class="chart-wrap"><div class="chart-caption"><span>Orders &amp; dispatches</span><strong>Last 7 days</strong></div><svg viewBox="0 0 560 118" role="img" aria-label="Orders trend rising during the past week" preserveAspectRatio="none"><defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00b3a6" stop-opacity=".24"/><stop offset="1" stop-color="#00b3a6" stop-opacity="0"/></linearGradient></defs><path class="chart-area" d="M0 94 C38 84 50 86 76 68 S123 74 156 54 S201 65 235 43 S284 57 316 34 S361 50 396 29 S442 43 478 18 S520 34 560 8 V118 H0Z"/><path class="chart-line" d="M0 94 C38 84 50 86 76 68 S123 74 156 54 S201 65 235 43 S284 57 316 34 S361 50 396 29 S442 43 478 18 S520 34 560 8"/></svg><div class="chart-days"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></div><div class="insight-stats"><div><span>Orders</span><strong>546 <em>↗ 12%</em></strong></div><div><span>Dispatches</span><strong>520 <em>↗ 8%</em></strong></div><div><span>Inventory value</span><strong>₹48.6L <em>↗ 6%</em></strong></div></div></div></section>
+        <section class="tip-banner"><span class="tip-icon">✦</span><div><strong>One platform. Every business workflow.</strong><p>Your modules, people, and operations in one workspace.</p></div><button aria-label="Dismiss tip">×</button></section>
+        <footer>© 2026 Karmivo Business Cloud <span>•</span> Your workspace, your way.</footer>
         <section class="content-section admin-section" id="iam" hidden><div class="section-heading"><div><h2>User &amp; role management</h2><p id="companyIdentity">Company IAM</p></div><div class="device-status"><span class="status-dot"></span><span>Admin access</span></div></div><div class="iam-card"><form id="iamUserForm" class="iam-form"><label>Name<input name="name" required placeholder="Aarav Mehta" /></label><label>Username<input name="username" required placeholder="aarav.mehta" /></label><label>Password<input name="password" type="password" minlength="8" required placeholder="Set login password" /></label><label>Role<select name="role"><option value="user">User</option><option value="manager">Manager</option><option value="viewer">Viewer</option></select></label><fieldset><legend>Service privileges</legend><div id="iamPermissions"></div></fieldset><button class="auth-submit" type="submit">Create user</button><p class="auth-error" id="iamError" role="alert"></p></form><div class="iam-list"><h3>Company users</h3><div id="iamUsers"></div></div></div></section>
       </main>
     </div>

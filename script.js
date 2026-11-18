@@ -54,6 +54,8 @@ function showApp(user) {
   document.querySelector('.profile strong').textContent = user.name;
   document.querySelector('.profile small').textContent = user.email;
   document.querySelector('.top-avatar').textContent = user.name.slice(0, 2).toUpperCase();
+  document.querySelector('.header-user').textContent = user.name;
+  document.querySelector('#todayDate').textContent = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
   const iamNav = document.querySelector('#iamNav');
   iamNav.hidden = user.role !== 'admin';
   if (user.role === 'admin') loadIAM();
